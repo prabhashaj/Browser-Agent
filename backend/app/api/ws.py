@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.api.auth import get_current_user_id, validate_ws_ticket
-from app.schemas.events import ClientCommand
 
 if TYPE_CHECKING:
     pass
@@ -66,7 +65,7 @@ async def websocket_endpoint(websocket: WebSocket, run_id: str):
                     break
                 await websocket.send_text(json.dumps(event))
                 event_queue.task_done()
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # Send keepalive ping
                 try:
                     await websocket.send_text(json.dumps({"type": "ping"}))

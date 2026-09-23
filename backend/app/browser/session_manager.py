@@ -31,11 +31,11 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 # Singleton browser instance shared across all sessions
-_browser: "Browser | None" = None
+_browser: Browser | None = None
 _browser_lock = asyncio.Lock()
 
 
-async def _get_browser(headless: bool = True) -> "Browser":
+async def _get_browser(headless: bool = True) -> Browser:
     global _browser
     async with _browser_lock:
         if _browser is None or not _browser.is_connected():
@@ -61,7 +61,7 @@ async def _get_browser(headless: bool = True) -> "Browser":
 
 
 class BrowserTab:
-    def __init__(self, page: "Page", tab_id: str):
+    def __init__(self, page: Page, tab_id: str):
         self.page = page
         self.tab_id = tab_id
         self.screencast: ScreencastSession | None = None
@@ -87,17 +87,17 @@ class BrowserSession:
         self,
         run_id: str,
         settings: Settings,
-        emit: "callable",  # async (event: dict) -> None
+        emit: callable,  # async (event: dict) -> None
     ):
         self.run_id = run_id
         self.settings = settings
         self._emit = emit
-        self._context: "BrowserContext | None" = None
+        self._context: BrowserContext | None = None
         self._tabs: list[BrowserTab] = []
         self._active_tab_id: str | None = None
         self._closed = False
 
-    async def __aenter__(self) -> "BrowserSession":
+    async def __aenter__(self) -> BrowserSession:
         browser = await _get_browser(headless=True)
         self._context = await browser.new_context(
             viewport={"width": 1280, "height": 800},
@@ -134,7 +134,7 @@ class BrowserSession:
 
     # ── Tab management ─────────────────────────────────────────────────────────
 
-    async def _add_tab(self, page: "Page") -> BrowserTab:
+    async def _add_tab(self, page: Page) -> BrowserTab:
         tab_id = str(uuid.uuid4())[:8]
         tab = BrowserTab(page, tab_id)
 
@@ -173,7 +173,7 @@ class BrowserSession:
             })
         return callback
 
-    async def _on_new_page(self, page: "Page") -> None:
+    async def _on_new_page(self, page: Page) -> None:
         await self._add_tab(page)
 
     async def _on_page_close(self, tab_id: str) -> None:
@@ -255,7 +255,7 @@ class BrowserSession:
         return self._tabs[-1] if self._tabs else None
 
     @property
-    def page(self) -> "Page":
+    def page(self) -> Page:
         """Return the active Playwright Page."""
         tab = self._active_tab()
         if tab is None:

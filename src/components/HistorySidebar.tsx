@@ -30,11 +30,16 @@ function ThreadItem({
     >
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium leading-5 text-foreground">{thread.title}</p>
-        <p className="text-xs opacity-60">{thread.message_count} messages · {timeStr}</p>
+        <p className="text-xs opacity-60">
+          {thread.message_count} messages · {timeStr}
+        </p>
       </div>
       <button
         className="invisible size-6 flex-shrink-0 rounded-lg hover:bg-destructive/15 hover:text-destructive group-hover:visible"
-        onClick={(e) => { e.stopPropagation(); onDelete(); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
         aria-label={`Delete thread "${thread.title}"`}
         tabIndex={-1}
       >
@@ -52,7 +57,8 @@ export function HistorySidebar({ open, onClose, onSelectThread }: HistorySidebar
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    api.threads.list()
+    api.threads
+      .list()
       .then(setThreads)
       .catch(() => setThreads([]))
       .finally(() => setLoading(false));
@@ -105,7 +111,13 @@ export function HistorySidebar({ open, onClose, onSelectThread }: HistorySidebar
           >
             <div className="flex h-12 items-center justify-between px-4 border-b border-border flex-shrink-0">
               <p className="text-sm font-semibold">History</p>
-              <Button variant="ghost" size="icon" className="size-7" onClick={onClose} aria-label="Close history">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-7"
+                onClick={onClose}
+                aria-label="Close history"
+              >
                 <X className="size-4" />
               </Button>
             </div>
@@ -134,7 +146,10 @@ export function HistorySidebar({ open, onClose, onSelectThread }: HistorySidebar
                   <ThreadItem
                     key={t.id}
                     thread={t}
-                    onSelect={() => { onSelectThread?.(t.id); onClose(); }}
+                    onSelect={() => {
+                      onSelectThread?.(t.id);
+                      onClose();
+                    }}
                     onDelete={() => deleteThread(t.id)}
                   />
                 ))

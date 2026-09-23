@@ -16,7 +16,8 @@ export function Composer({ session, onVoiceOpen }: ComposerProps) {
 
   const [draft, setDraft] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const isRunning = agentStatus === "running" || agentStatus === "thinking" || agentStatus === "waiting";
+  const isRunning =
+    agentStatus === "running" || agentStatus === "thinking" || agentStatus === "waiting";
 
   const submit = useCallback(async () => {
     const text = draft.trim();
@@ -77,7 +78,11 @@ export function Composer({ session, onVoiceOpen }: ComposerProps) {
             onClick={isRunning ? session.stop : submit}
             aria-label={isRunning ? "Stop agent" : "Send message"}
           >
-            {isRunning ? <Square className="size-3.5 fill-current" /> : <ArrowUp className="size-4" />}
+            {isRunning ? (
+              <Square className="size-3.5 fill-current" />
+            ) : (
+              <ArrowUp className="size-4" />
+            )}
           </Button>
         </div>
       </div>

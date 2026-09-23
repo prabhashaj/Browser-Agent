@@ -30,6 +30,7 @@
 ## Quick Start
 
 ### Prerequisites
+
 - **Node.js / Bun** (for frontend): `bun >= 1.x`
 - **Python 3.12** (for backend)
 - **Playwright**: installed automatically with `playwright install chromium`
@@ -72,18 +73,18 @@ Open **http://localhost:8080** — sign up for a local account and start chattin
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `GEMINI_API_KEY` | — | Google Gemini API key (preferred) |
-| `ANTHROPIC_API_KEY` | — | Anthropic Claude API key |
-| `DATABASE_URL` | `sqlite+aiosqlite:///./pilot.db` | SQLite (default) or PostgreSQL connection string |
-| `SESSION_SECRET` | `change-me-in-production` | **Change this!** Secret for signed session cookies |
-| `MAX_CONCURRENT_RUNS` | `2` | Max parallel agent runs per server |
-| `MAX_STEPS_PER_RUN` | `60` | Hard limit on LLM steps per run |
-| `MAX_RUN_SECONDS` | `600` | Hard time budget per run (10 min) |
-| `APPROVAL_TIMEOUT_SECONDS` | `300` | How long the agent waits for human approval |
-| `SCREENCAST_FPS` | `10` | JPEG frame rate sent to client |
-| `KILL_SWITCH` | `false` | Set `true` to immediately stop all new runs |
+| Variable                   | Default                          | Description                                        |
+| -------------------------- | -------------------------------- | -------------------------------------------------- |
+| `GEMINI_API_KEY`           | —                                | Google Gemini API key (preferred)                  |
+| `ANTHROPIC_API_KEY`        | —                                | Anthropic Claude API key                           |
+| `DATABASE_URL`             | `sqlite+aiosqlite:///./pilot.db` | SQLite (default) or PostgreSQL connection string   |
+| `SESSION_SECRET`           | `change-me-in-production`        | **Change this!** Secret for signed session cookies |
+| `MAX_CONCURRENT_RUNS`      | `2`                              | Max parallel agent runs per server                 |
+| `MAX_STEPS_PER_RUN`        | `60`                             | Hard limit on LLM steps per run                    |
+| `MAX_RUN_SECONDS`          | `600`                            | Hard time budget per run (10 min)                  |
+| `APPROVAL_TIMEOUT_SECONDS` | `300`                            | How long the agent waits for human approval        |
+| `SCREENCAST_FPS`           | `10`                             | JPEG frame rate sent to client                     |
+| `KILL_SWITCH`              | `false`                          | Set `true` to immediately stop all new runs        |
 
 ---
 
@@ -91,17 +92,18 @@ Open **http://localhost:8080** — sign up for a local account and start chattin
 
 Every action proposed by the LLM passes through a **deterministic policy gate** before execution:
 
-| Trigger | Verdict | Risk |
-|---|---|---|
-| Prompt-injection text in page | BLOCK | CRITICAL |
-| Payment/financial domain | REQUIRE\_APPROVAL | HIGH |
-| Checkout/confirm URL pattern | REQUIRE\_APPROVAL | HIGH |
-| Destructive element label (delete, cancel subscription…) | REQUIRE\_APPROVAL | MEDIUM |
-| Everything else | ALLOW | LOW |
+| Trigger                                                  | Verdict           | Risk     |
+| -------------------------------------------------------- | ----------------- | -------- |
+| Prompt-injection text in page                            | BLOCK             | CRITICAL |
+| Payment/financial domain                                 | REQUIRE\_APPROVAL | HIGH     |
+| Checkout/confirm URL pattern                             | REQUIRE\_APPROVAL | HIGH     |
+| Destructive element label (delete, cancel subscription…) | REQUIRE\_APPROVAL | MEDIUM   |
+| Everything else                                          | ALLOW             | LOW      |
 
 The LLM **cannot** override these rules. A `BLOCK` verdict immediately stops the run.
 
 **Secrets** (passwords, card numbers, OTPs) are:
+
 - Never logged
 - Never sent in WebSocket events
 - Never passed to the LLM
@@ -116,6 +118,7 @@ docker compose up --build
 ```
 
 The compose file starts:
+
 - `backend` — FastAPI on port 8000
 - `frontend` — Vite dev server on port 8080 (dev) or nginx (prod)
 

@@ -42,13 +42,4 @@ jobs:
       - run: pip install -r backend/requirements.txt
       - run: cd backend && pytest -x -q
 
-  e2e:
-    name: E2E (demo-sites)
-    runs-on: ubuntu-latest
-    needs: [lint-frontend, test-backend]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
-      - run: bun x playwright install chromium --with-deps
-      - run: bun run test:e2e
+

@@ -42,7 +42,9 @@ export function TaskCard() {
         />
       </div>
       {(isDone || isFailed) && (
-        <div className={`flex items-center gap-2 px-4 py-2 text-xs font-medium ${isDone ? "text-success" : "text-destructive"}`}>
+        <div
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-medium ${isDone ? "text-success" : "text-destructive"}`}
+        >
           {isDone ? <CheckCircle2 className="size-3.5" /> : <AlertCircle className="size-3.5" />}
           {isDone ? "Task complete" : "Task failed"}
         </div>

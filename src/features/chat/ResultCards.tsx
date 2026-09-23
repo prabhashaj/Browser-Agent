@@ -5,7 +5,9 @@ function FlightResult({ data }: { data: Record<string, unknown> }) {
   return (
     <div className="result-card">
       <div className="flex items-center justify-between">
-        <div className="result-icon"><Plane /></div>
+        <div className="result-icon">
+          <Plane />
+        </div>
         <span className="status-success">Confirmed</span>
       </div>
       <div className="mt-5 flex items-end justify-between">
@@ -34,7 +36,9 @@ function FoodResult({ data }: { data: Record<string, unknown> }) {
   return (
     <div className="result-card">
       <div className="flex items-center gap-3">
-        <div className="result-icon"><ShoppingBag /></div>
+        <div className="result-icon">
+          <ShoppingBag />
+        </div>
         <div>
           <b>Order confirmed</b>
           <p className="text-xs text-muted-foreground">{String(data["restaurant"] ?? "—")}</p>
@@ -65,8 +69,13 @@ function ProductResult({ data }: { data: Record<string, unknown> }) {
         <span className="text-xs text-muted-foreground">{items.length} compared</span>
       </div>
       {items.map((p, i) => (
-        <div key={String(p["name"] ?? i)} className="mt-3 flex items-center gap-3 border-t border-border pt-3">
-          <span className="grid size-7 place-items-center rounded-lg bg-muted text-xs font-semibold">{i + 1}</span>
+        <div
+          key={String(p["name"] ?? i)}
+          className="mt-3 flex items-center gap-3 border-t border-border pt-3"
+        >
+          <span className="grid size-7 place-items-center rounded-lg bg-muted text-xs font-semibold">
+            {i + 1}
+          </span>
           <div className="min-w-0 flex-1">
             <b className="text-sm">{String(p["name"] ?? "—")}</b>
             <p className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -85,7 +94,9 @@ function GenericResult({ result }: { result: RunResult }) {
   return (
     <div className="result-card space-y-3">
       <div className="flex items-center gap-2">
-        <div className="result-icon"><Check /></div>
+        <div className="result-icon">
+          <Check />
+        </div>
         <b>{result.message}</b>
       </div>
       {Object.entries(result.data).map(([k, v]) => (
@@ -97,7 +108,15 @@ function GenericResult({ result }: { result: RunResult }) {
       {result.sources.length > 0 && (
         <div className="pt-2 border-t border-border space-y-1">
           {result.sources.map((s) => (
-            <a key={s} href={s} target="_blank" rel="noopener noreferrer" className="block truncate text-xs text-page-link hover:underline">{s}</a>
+            <a
+              key={s}
+              href={s}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block truncate text-xs text-page-link hover:underline"
+            >
+              {s}
+            </a>
           ))}
         </div>
       )}

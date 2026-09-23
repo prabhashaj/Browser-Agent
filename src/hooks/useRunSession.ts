@@ -35,9 +35,7 @@ const optStr = (v: unknown): string | undefined => (typeof v === "string" ? v : 
 const optNum = (v: unknown): number | undefined => (typeof v === "number" ? v : undefined);
 const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 const obj = (v: unknown): Record<string, unknown> =>
-  typeof v === "object" && v !== null && !Array.isArray(v)
-    ? (v as Record<string, unknown>)
-    : {};
+  typeof v === "object" && v !== null && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
 
 export function useRunSession(threadId: string): RunSessionHandle {
   const store = usePilotStore();
@@ -90,10 +88,12 @@ export function useRunSession(threadId: string): RunSessionHandle {
               index: num(step["index"]),
               operation: str(step["operation"]),
               target: str(step["target"]),
-              ...(step["element_index"] != null ? { elementIndex: num(step["element_index"]) } : {}),
+              ...(step["element_index"] != null
+                ? { elementIndex: num(step["element_index"]) }
+                : {}),
               status: "pending" as const,
             };
-          })
+          }),
         );
         break;
 
@@ -126,7 +126,7 @@ export function useRunSession(threadId: string): RunSessionHandle {
               loading: bool(tab["loading"]),
               active: bool(tab["active"]),
             };
-          })
+          }),
         );
         break;
 
@@ -147,9 +147,14 @@ export function useRunSession(threadId: string): RunSessionHandle {
               type: str(e["kind"]) as "button" | "textbox" | "combobox" | "link",
               label: str(e["label"]),
               ...(e["value"] != null ? { value: str(e["value"]) } : {}),
-              bbox: { x: num(bboxRaw["x"]), y: num(bboxRaw["y"]), w: num(bboxRaw["w"]), h: num(bboxRaw["h"]) },
+              bbox: {
+                x: num(bboxRaw["x"]),
+                y: num(bboxRaw["y"]),
+                w: num(bboxRaw["w"]),
+                h: num(bboxRaw["h"]),
+              },
             };
-          })
+          }),
         );
         break;
 
@@ -173,7 +178,9 @@ export function useRunSession(threadId: string): RunSessionHandle {
           ...(raw["amount"] != null ? { amount: str(raw["amount"]) } : {}),
           ...(raw["risk"] != null ? { risk: str(raw["risk"]) } : {}),
           ...(raw["screenshot"] != null ? { screenshot: str(raw["screenshot"]) } : {}),
-          ...(raw["timeout_seconds"] != null ? { timeoutSeconds: num(raw["timeout_seconds"]) } : {}),
+          ...(raw["timeout_seconds"] != null
+            ? { timeoutSeconds: num(raw["timeout_seconds"]) }
+            : {}),
         });
         s.setAgentStatus("waiting");
         break;
@@ -192,7 +199,12 @@ export function useRunSession(threadId: string): RunSessionHandle {
 
       case "blocked":
         s.setAgentStatus("failed");
-        s.addServerMessage({ id: nanoid(), role: "assistant", text: `⚠️ Blocked: ${str(raw["reason"])}`, createdAt: Date.now() });
+        s.addServerMessage({
+          id: nanoid(),
+          role: "assistant",
+          text: `⚠️ Blocked: ${str(raw["reason"])}`,
+          createdAt: Date.now(),
+        });
         break;
 
       case "task_finished": {
@@ -212,116 +224,153 @@ export function useRunSession(threadId: string): RunSessionHandle {
       case "task_failed":
         s.updateTask({ status: "failed" });
         s.setAgentStatus("idle");
-        s.addServerMessage({ id: nanoid(), role: "assistant", text: str(raw["message"]), createdAt: Date.now() });
+        s.addServerMessage({
+          id: nanoid(),
+          role: "assistant",
+          text: str(raw["message"]),
+          createdAt: Date.now(),
+        });
         break;
 
       case "reconnect_snapshot":
         if (raw["steps"]) {
-          s.setSteps(arr(raw["steps"]).map((st) => {
-            const step = obj(st);
-            return {
-              id: str(step["id"]),
-              index: num(step["index"]),
-              operation: str(step["operation"]),
-              target: str(step["target"]),
-              ...(step["element_index"] != null ? { elementIndex: num(step["element_index"]) } : {}),
-              status: str(step["status"]) as "pending" | "running" | "done" | "blocked",
-            };
-          }));
+          s.setSteps(
+            arr(raw["steps"]).map((st) => {
+              const step = obj(st);
+              return {
+                id: str(step["id"]),
+                index: num(step["index"]),
+                operation: str(step["operation"]),
+                target: str(step["target"]),
+                ...(step["element_index"] != null
+                  ? { elementIndex: num(step["element_index"]) }
+                  : {}),
+                status: str(step["status"]) as "pending" | "running" | "done" | "blocked",
+              };
+            }),
+          );
         }
         if (raw["tabs"]) {
-          s.setTabs(arr(raw["tabs"]).map((t) => {
-            const tab = obj(t);
-            return { id: str(tab["id"]), title: str(tab["title"]), url: str(tab["url"]), loading: bool(tab["loading"]), active: bool(tab["active"]) };
-          }));
+          s.setTabs(
+            arr(raw["tabs"]).map((t) => {
+              const tab = obj(t);
+              return {
+                id: str(tab["id"]),
+                title: str(tab["title"]),
+                url: str(tab["url"]),
+                loading: bool(tab["loading"]),
+                active: bool(tab["active"]),
+              };
+            }),
+          );
         }
         s.setReconnecting(false);
         break;
     }
   }, []);
 
-  const connectWs = useCallback(async (runId: string) => {
-    if (stopped.current) return;
+  const connectWs = useCallback(
+    async (runId: string) => {
+      if (stopped.current) return;
 
-    let ticketParam = "";
-    try {
-      const { ticket } = await api.auth.wsTicket();
-      ticketParam = `?ticket=${ticket}`;
-    } catch {
-      // Fall back to cookie auth
-    }
-
-    const url = `${WS_BASE}/ws/${runId}${ticketParam}`;
-    const ws = new WebSocket(url);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      reconnectAttempts.current = 0;
-      usePilotStore.getState().setReconnecting(false);
-    };
-
-    ws.onmessage = (e: MessageEvent<string>) => {
+      let ticketParam = "";
       try {
-        const event = JSON.parse(e.data) as Record<string, unknown>;
-        if (event["type"] === "ping") return;
-        applyEvent(event);
+        const { ticket } = await api.auth.wsTicket();
+        ticketParam = `?ticket=${ticket}`;
       } catch {
-        // ignore malformed frames
+        // Fall back to cookie auth
       }
-    };
 
-    ws.onclose = (e: CloseEvent) => {
-      if (stopped.current || e.code === 1000) return;
-      const delay = BACKOFF[Math.min(reconnectAttempts.current, BACKOFF.length - 1)] ?? 30000;
-      reconnectAttempts.current++;
-      usePilotStore.getState().setReconnecting(true);
-      reconnectTimer.current = setTimeout(() => {
-        const rid = runIdRef.current;
-        if (rid) void connectWs(rid);
-      }, delay);
-    };
-  }, [applyEvent]);
+      const url = `${WS_BASE}/ws/${runId}${ticketParam}`;
+      const ws = new WebSocket(url);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        reconnectAttempts.current = 0;
+        usePilotStore.getState().setReconnecting(false);
+      };
+
+      ws.onmessage = (e: MessageEvent<string>) => {
+        try {
+          const event = JSON.parse(e.data) as Record<string, unknown>;
+          if (event["type"] === "ping") return;
+          applyEvent(event);
+        } catch {
+          // ignore malformed frames
+        }
+      };
+
+      ws.onclose = (e: CloseEvent) => {
+        if (stopped.current || e.code === 1000) return;
+        const delay = BACKOFF[Math.min(reconnectAttempts.current, BACKOFF.length - 1)] ?? 30000;
+        reconnectAttempts.current++;
+        usePilotStore.getState().setReconnecting(true);
+        reconnectTimer.current = setTimeout(() => {
+          const rid = runIdRef.current;
+          if (rid) void connectWs(rid);
+        }, delay);
+      };
+    },
+    [applyEvent],
+  );
 
   // Public API ─────────────────────────────────────────────────────────────────
 
-  const send = useCallback(async (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
+  const send = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
 
-    const s = usePilotStore.getState();
-    const userMsgId = nanoid();
-    s.addServerMessage({ id: userMsgId, role: "user", text: trimmed, createdAt: Date.now() });
-    const assistantId = nanoid();
-    s.addServerMessage({ id: assistantId, role: "assistant", text: "", createdAt: Date.now() });
-    s.setCurrentAssistantId(assistantId);
-    s.setAgentStatus("thinking");
+      const s = usePilotStore.getState();
+      const userMsgId = nanoid();
+      s.addServerMessage({ id: userMsgId, role: "user", text: trimmed, createdAt: Date.now() });
+      const assistantId = nanoid();
+      s.addServerMessage({ id: assistantId, role: "assistant", text: "", createdAt: Date.now() });
+      s.setCurrentAssistantId(assistantId);
+      s.setAgentStatus("thinking");
 
-    try {
-      const run = await api.runs.create(threadId, trimmed);
-      runIdRef.current = run.id;
-      s.setCurrentRunId(run.id);
-      stopped.current = false;
-      await connectWs(run.id);
-    } catch (err) {
-      s.setAgentStatus("idle");
-      s.addServerMessage({ id: nanoid(), role: "assistant", text: `Error: ${(err as Error).message}`, createdAt: Date.now() });
-    }
-  }, [threadId, connectWs]);
+      try {
+        const run = await api.runs.create(threadId, trimmed);
+        runIdRef.current = run.id;
+        s.setCurrentRunId(run.id);
+        stopped.current = false;
+        await connectWs(run.id);
+      } catch (err) {
+        s.setAgentStatus("idle");
+        s.addServerMessage({
+          id: nanoid(),
+          role: "assistant",
+          text: `Error: ${(err as Error).message}`,
+          createdAt: Date.now(),
+        });
+      }
+    },
+    [threadId, connectWs],
+  );
 
-  const approve = useCallback((id: string) => {
-    sendWsCmd({ cmd: "approve", approval_id: id });
-    usePilotStore.getState().setApproval(null);
-  }, [sendWsCmd]);
+  const approve = useCallback(
+    (id: string) => {
+      sendWsCmd({ cmd: "approve", approval_id: id });
+      usePilotStore.getState().setApproval(null);
+    },
+    [sendWsCmd],
+  );
 
-  const decline = useCallback((id: string) => {
-    sendWsCmd({ cmd: "decline", approval_id: id });
-    usePilotStore.getState().setApproval(null);
-  }, [sendWsCmd]);
+  const decline = useCallback(
+    (id: string) => {
+      sendWsCmd({ cmd: "decline", approval_id: id });
+      usePilotStore.getState().setApproval(null);
+    },
+    [sendWsCmd],
+  );
 
-  const provideSecret = useCallback((id: string, values: Record<string, string>) => {
-    sendWsCmd({ cmd: "provide_secret", secret_id: id, values });
-    usePilotStore.getState().setSecret(null);
-  }, [sendWsCmd]);
+  const provideSecret = useCallback(
+    (id: string, values: Record<string, string>) => {
+      sendWsCmd({ cmd: "provide_secret", secret_id: id, values });
+      usePilotStore.getState().setSecret(null);
+    },
+    [sendWsCmd],
+  );
 
   const stop = useCallback(() => {
     stopped.current = true;

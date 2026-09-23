@@ -7,7 +7,10 @@
 const BASE = (import.meta.env["VITE_API_BASE"] as string | undefined) ?? "http://localhost:8000";
 
 class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
     this.name = "ApiError";
   }
@@ -44,9 +47,15 @@ export interface UserOut {
 export const api = {
   auth: {
     signup: (email: string, password: string) =>
-      request<UserOut>("/api/auth/signup", { method: "POST", body: JSON.stringify({ email, password }) }),
+      request<UserOut>("/api/auth/signup", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      }),
     login: (email: string, password: string) =>
-      request<UserOut>("/api/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+      request<UserOut>("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      }),
     logout: () => request<void>("/api/auth/logout", { method: "POST" }),
     me: () => request<UserOut>("/api/auth/me"),
     wsTicket: () => request<{ ticket: string }>("/api/auth/ws-ticket"),
@@ -56,10 +65,16 @@ export const api = {
   threads: {
     list: () => request<ThreadOut[]>("/api/threads"),
     create: (title?: string) =>
-      request<ThreadDetailOut>("/api/threads", { method: "POST", body: JSON.stringify({ title: title ?? "New conversation" }) }),
+      request<ThreadDetailOut>("/api/threads", {
+        method: "POST",
+        body: JSON.stringify({ title: title ?? "New conversation" }),
+      }),
     get: (id: string) => request<ThreadDetailOut>(`/api/threads/${id}`),
     rename: (id: string, title: string) =>
-      request<ThreadOut>(`/api/threads/${id}`, { method: "PATCH", body: JSON.stringify({ title }) }),
+      request<ThreadOut>(`/api/threads/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ title }),
+      }),
     delete: (id: string) => request<void>(`/api/threads/${id}`, { method: "DELETE" }),
   },
 

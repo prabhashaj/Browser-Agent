@@ -17,7 +17,10 @@ function SignupPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (password.length < 8) { setError("Password must be at least 8 characters"); return; }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
     setLoading(true);
     try {
       await api.auth.signup(email, password);
@@ -29,5 +32,23 @@ function SignupPage() {
     }
   };
 
-  return <AuthLayout title="Create account" subtitle="Start using Pilot for free" onSubmit={submit} error={error} loading={loading} email={email} setEmail={setEmail} password={password} setPassword={setPassword} showPw={showPw} setShowPw={setShowPw} submitLabel="Create account" altText="Already have an account?" altLink="/login" altLinkText="Sign in" />;
+  return (
+    <AuthLayout
+      title="Create account"
+      subtitle="Start using Pilot for free"
+      onSubmit={submit}
+      error={error}
+      loading={loading}
+      email={email}
+      setEmail={setEmail}
+      password={password}
+      setPassword={setPassword}
+      showPw={showPw}
+      setShowPw={setShowPw}
+      submitLabel="Create account"
+      altText="Already have an account?"
+      altLink="/login"
+      altLinkText="Sign in"
+    />
+  );
 }

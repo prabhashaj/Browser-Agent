@@ -4,10 +4,96 @@ import { Button } from "@/components/ui/button";
 import { usePilotStore } from "@/store/pilotStore";
 
 export function VoiceMode({ compact = false }: { compact?: boolean }) {
-  const voice = usePilotStore((s)=>s.voiceState); const setVoice = usePilotStore((s)=>s.setVoiceState);
-  const supported = typeof window !== "undefined" && ("speechSynthesis" in window || "webkitSpeechRecognition" in window);
-  if (voice==="idle") return null;
-  if (compact) return <motion.div initial={{y:30,opacity:0}} animate={{y:0,opacity:1}} className="voice-bar"><VoiceOrb small/><div className="min-w-0 flex-1"><b className="capitalize">{voice}</b><p className="truncate text-xs text-muted-foreground">{supported?"Listening for your next instruction":"Voice preview · microphone unavailable"}</p></div><Button variant="ghost" size="icon" onClick={()=>setVoice("idle")} aria-label="End voice"><PhoneOff/></Button></motion.div>;
-  return <motion.div initial={{opacity:0}} animate={{opacity:1}} className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-background/94 px-6 backdrop-blur-xl"><p className="absolute top-8 text-xs font-medium uppercase text-muted-foreground">Voice conversation</p><VoiceOrb/><h2 className="mt-10 text-2xl font-semibold capitalize">{voice}</h2><p className="mt-2 max-w-sm text-center text-sm text-muted-foreground">{supported?voice==="listening"?"I’m listening — say what you’d like me to do.":"Working on that…":"Your browser didn’t allow microphone access. You can still preview voice mode or switch to text."}</p><div className="mt-8 flex gap-3"><Button variant="secondary" size="icon" aria-label="Mute"><MicOff/></Button><Button variant="destructive" size="icon" onClick={()=>setVoice("idle")} aria-label="End voice"><PhoneOff/></Button><Button variant="secondary" size="icon" onClick={()=>setVoice("idle")} aria-label="Switch to text"><Keyboard/></Button></div></motion.div>;
+  const voice = usePilotStore((s) => s.voiceState);
+  const setVoice = usePilotStore((s) => s.setVoiceState);
+  const supported =
+    typeof window !== "undefined" &&
+    ("speechSynthesis" in window || "webkitSpeechRecognition" in window);
+  if (voice === "idle") return null;
+  if (compact)
+    return (
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="voice-bar"
+      >
+        <VoiceOrb small />
+        <div className="min-w-0 flex-1">
+          <b className="capitalize">{voice}</b>
+          <p className="truncate text-xs text-muted-foreground">
+            {supported
+              ? "Listening for your next instruction"
+              : "Voice preview · microphone unavailable"}
+          </p>
+        </div>
+        <Button variant="ghost" size="icon" onClick={() => setVoice("idle")} aria-label="End voice">
+          <PhoneOff />
+        </Button>
+      </motion.div>
+    );
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-background/94 px-6 backdrop-blur-xl"
+    >
+      <p className="absolute top-8 text-xs font-medium uppercase text-muted-foreground">
+        Voice conversation
+      </p>
+      <VoiceOrb />
+      <h2 className="mt-10 text-2xl font-semibold capitalize">{voice}</h2>
+      <p className="mt-2 max-w-sm text-center text-sm text-muted-foreground">
+        {supported
+          ? voice === "listening"
+            ? "I’m listening — say what you’d like me to do."
+            : "Working on that…"
+          : "Your browser didn’t allow microphone access. You can still preview voice mode or switch to text."}
+      </p>
+      <div className="mt-8 flex gap-3">
+        <Button variant="secondary" size="icon" aria-label="Mute">
+          <MicOff />
+        </Button>
+        <Button
+          variant="destructive"
+          size="icon"
+          onClick={() => setVoice("idle")}
+          aria-label="End voice"
+        >
+          <PhoneOff />
+        </Button>
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={() => setVoice("idle")}
+          aria-label="Switch to text"
+        >
+          <Keyboard />
+        </Button>
+      </div>
+    </motion.div>
+  );
 }
-function VoiceOrb({ small=false }: { small?: boolean }) { return <div className={small?"voice-orb-small":"voice-orb"}><motion.div animate={{scale:[1,1.08,1],rotate:[0,15,0]}} transition={{duration:1.8,repeat:Infinity}} className="voice-orb-core"><Volume2 className={small?"size-4":"size-8"}/></motion.div>{!small&&<div className="waveform" aria-hidden="true">{Array.from({length:18},(_,i)=><motion.i key={i} animate={{height:[8,12+(i%5)*6,8]}} transition={{duration:.7+(i%4)*.12,repeat:Infinity,delay:i*.04}}/>)}</div>}</div>; }
+function VoiceOrb({ small = false }: { small?: boolean }) {
+  return (
+    <div className={small ? "voice-orb-small" : "voice-orb"}>
+      <motion.div
+        animate={{ scale: [1, 1.08, 1], rotate: [0, 15, 0] }}
+        transition={{ duration: 1.8, repeat: Infinity }}
+        className="voice-orb-core"
+      >
+        <Volume2 className={small ? "size-4" : "size-8"} />
+      </motion.div>
+      {!small && (
+        <div className="waveform" aria-hidden="true">
+          {Array.from({ length: 18 }, (_, i) => (
+            <motion.i
+              key={i}
+              animate={{ height: [8, 12 + (i % 5) * 6, 8] }}
+              transition={{ duration: 0.7 + (i % 4) * 0.12, repeat: Infinity, delay: i * 0.04 }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

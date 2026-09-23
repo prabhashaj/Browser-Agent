@@ -78,18 +78,45 @@ export function PilotShell({ threadId, onProvideSecret, onCancelSecret }: PilotS
   const onKeyDown = useCallback(
     (e: globalThis.KeyboardEvent) => {
       const meta = e.metaKey || e.ctrlKey;
-      if (meta && e.key === "k") { e.preventDefault(); setPaletteOpen((o) => !o); return; }
-      if (meta && e.key === ",") { e.preventDefault(); setSettingsOpen(true); return; }
-      if (meta && e.key === "\\") { e.preventDefault(); s.setLayoutMode(s.layoutMode === "chat" ? "split" : "chat"); return; }
+      if (meta && e.key === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+        return;
+      }
+      if (meta && e.key === ",") {
+        e.preventDefault();
+        setSettingsOpen(true);
+        return;
+      }
+      if (meta && e.key === "\\") {
+        e.preventDefault();
+        s.setLayoutMode(s.layoutMode === "chat" ? "split" : "chat");
+        return;
+      }
       if (e.key === "Escape") {
-        if (voiceOpen) { setVoiceOpen(false); return; }
-        if (paletteOpen) { setPaletteOpen(false); return; }
-        if (settingsOpen) { setSettingsOpen(false); return; }
-        if (historyOpen) { setHistoryOpen(false); return; }
-        if (s.agentStatus === "running") { session.stop(); return; }
+        if (voiceOpen) {
+          setVoiceOpen(false);
+          return;
+        }
+        if (paletteOpen) {
+          setPaletteOpen(false);
+          return;
+        }
+        if (settingsOpen) {
+          setSettingsOpen(false);
+          return;
+        }
+        if (historyOpen) {
+          setHistoryOpen(false);
+          return;
+        }
+        if (s.agentStatus === "running") {
+          session.stop();
+          return;
+        }
       }
     },
-    [paletteOpen, settingsOpen, historyOpen, voiceOpen, s, session]
+    [paletteOpen, settingsOpen, historyOpen, voiceOpen, s, session],
   );
 
   useEffect(() => {
@@ -101,9 +128,12 @@ export function PilotShell({ threadId, onProvideSecret, onCancelSecret }: PilotS
   useEffect(() => {
     const openHistory = () => setHistoryOpen(true);
     const newThread = () => {
-      api.threads.create().then((t) => {
-        window.location.href = `/?thread=${t.id}`;
-      }).catch(() => toast.error("Could not create conversation."));
+      api.threads
+        .create()
+        .then((t) => {
+          window.location.href = `/?thread=${t.id}`;
+        })
+        .catch(() => toast.error("Could not create conversation."));
     };
     document.addEventListener("pilot:open-history", openHistory);
     document.addEventListener("pilot:new-thread", newThread);
@@ -119,7 +149,7 @@ export function PilotShell({ threadId, onProvideSecret, onCancelSecret }: PilotS
       session.provideSecret(id, values);
       onProvideSecret(id, values);
     },
-    [session, onProvideSecret]
+    [session, onProvideSecret],
   );
 
   /* ── Panel size persistence ── */
@@ -177,7 +207,7 @@ export function PilotShell({ threadId, onProvideSecret, onCancelSecret }: PilotS
                 <Separator
                   className={cn(
                     "relative w-1 cursor-col-resize bg-border transition-colors",
-                    "hover:bg-agent/40 focus-visible:bg-agent/60 focus-visible:outline-none"
+                    "hover:bg-agent/40 focus-visible:bg-agent/60 focus-visible:outline-none",
                   )}
                   aria-label="Resize panels"
                 />
@@ -198,16 +228,16 @@ export function PilotShell({ threadId, onProvideSecret, onCancelSecret }: PilotS
         )}
 
         {/* Voice overlay — inside main so it covers content area */}
-        {voiceOpen && (
-          <VoiceMode session={session} onClose={() => setVoiceOpen(false)} />
-        )}
+        {voiceOpen && <VoiceMode session={session} onClose={() => setVoiceOpen(false)} />}
       </main>
 
       {/* ── Global overlays ── */}
       <HistorySidebar
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
-        onSelectThread={(id) => { window.location.href = `/?thread=${id}`; }}
+        onSelectThread={(id) => {
+          window.location.href = `/?thread=${id}`;
+        }}
       />
       <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <CommandPalette
@@ -221,7 +251,13 @@ export function PilotShell({ threadId, onProvideSecret, onCancelSecret }: PilotS
 }
 
 /* ── Mobile layout ── */
-function MobileLayout({ threadId, session }: { threadId: string; session: ReturnType<typeof useRunSession> }) {
+function MobileLayout({
+  threadId,
+  session,
+}: {
+  threadId: string;
+  session: ReturnType<typeof useRunSession>;
+}) {
   const s = usePilotStore();
 
   return (
@@ -236,7 +272,7 @@ function MobileLayout({ threadId, session }: { threadId: string; session: Return
                 "flex-1 py-2.5 text-sm font-medium capitalize transition-colors",
                 s.mobileView === view
                   ? "border-b-2 border-agent text-agent"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
               onClick={() => s.setMobileView(view)}
             >

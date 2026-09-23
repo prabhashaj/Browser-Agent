@@ -21,7 +21,11 @@ export function ApprovalSheet({ request, onApprove, onDecline }: ApprovalSheetPr
   useEffect(() => {
     const interval = setInterval(() => {
       setRemaining((r) => {
-        if (r <= 1) { clearInterval(interval); onDecline(); return 0; }
+        if (r <= 1) {
+          clearInterval(interval);
+          onDecline();
+          return 0;
+        }
         return r - 1;
       });
     }, 1000);
@@ -57,15 +61,15 @@ export function ApprovalSheet({ request, onApprove, onDecline }: ApprovalSheetPr
           <div className="flex items-center gap-2">
             <p className="font-semibold">{request.title}</p>
             {request.risk && (
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${riskClass}`}>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${riskClass}`}
+              >
                 {request.risk}
               </span>
             )}
           </div>
           <p className="mt-0.5 text-sm text-muted-foreground">{request.summary}</p>
-          {request.amount && (
-            <p className="mt-2 text-lg font-bold">{request.amount}</p>
-          )}
+          {request.amount && <p className="mt-2 text-lg font-bold">{request.amount}</p>}
         </div>
       </div>
 
@@ -78,7 +82,11 @@ export function ApprovalSheet({ request, onApprove, onDecline }: ApprovalSheetPr
       </div>
 
       <div className="flex items-center gap-2 border-t border-border px-5 py-3">
-        <Button id="approval-approve-btn" className="flex-1 bg-agent text-white hover:bg-agent/90" onClick={onApprove}>
+        <Button
+          id="approval-approve-btn"
+          className="flex-1 bg-agent text-white hover:bg-agent/90"
+          onClick={onApprove}
+        >
           <CheckCircle2 className="size-4" />
           Approve
         </Button>
@@ -86,7 +94,9 @@ export function ApprovalSheet({ request, onApprove, onDecline }: ApprovalSheetPr
           <XCircle className="size-4" />
           Decline
         </Button>
-        <span className="ml-auto font-mono text-xs text-muted-foreground">{mm}:{ss}</span>
+        <span className="ml-auto font-mono text-xs text-muted-foreground">
+          {mm}:{ss}
+        </span>
       </div>
 
       <div className="flex items-center gap-2 border-t border-border px-5 py-2.5 text-xs text-muted-foreground">

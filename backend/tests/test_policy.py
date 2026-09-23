@@ -1,7 +1,6 @@
 """backend/tests/test_policy.py — unit tests for the policy gate."""
 from __future__ import annotations
 
-import pytest
 from app.agent.policy import PolicyContext, PolicyVerdict, evaluate
 
 

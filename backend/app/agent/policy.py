@@ -21,7 +21,7 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from app.agent.decider.base import DecisionOutput
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +146,7 @@ def evaluate(ctx: PolicyContext) -> PolicyResult:
                 reason=f"High-risk URL pattern matched: {pattern.pattern}",
                 risk="HIGH",
                 title="Action requires confirmation",
-                summary=f"The current page looks like a checkout or confirmation page. Approve to continue.",
+                summary="The current page looks like a checkout or confirmation page. Approve to continue.",
             )
 
     # Rule 4: Suspicious element labels (delete, cancel subscription, etc.)

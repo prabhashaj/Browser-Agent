@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from passlib.context import CryptContext
@@ -139,7 +139,7 @@ async def me(user: User = Depends(get_current_user)):
 async def ws_ticket(user: User = Depends(get_current_user)):
     """Issue a short-lived (30s) ticket for WebSocket auth."""
     token = secrets.token_urlsafe(32)
-    expires_at = datetime.now(timezone.utc) + timedelta(seconds=30)
+    expires_at = datetime.now(UTC) + timedelta(seconds=30)
     TICKET_STORE[token] = user.id
     # Clean up expired tickets lazily
     return {"ticket": token, "expires_at": expires_at.isoformat()}

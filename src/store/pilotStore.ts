@@ -203,7 +203,8 @@ export const usePilotStore = create<PilotState>((set, get) => ({
 
   setLayoutMode: (layoutMode) => set({ layoutMode }),
   setPanelSizes: (panelSizes) => {
-    if (typeof window !== "undefined") localStorage.setItem("pilot-panel-sizes", JSON.stringify(panelSizes));
+    if (typeof window !== "undefined")
+      localStorage.setItem("pilot-panel-sizes", JSON.stringify(panelSizes));
     set({ panelSizes, panelFocus: "balanced" });
   },
   setPanelFocus: (panelFocus) => set({ panelFocus }),
@@ -215,15 +216,22 @@ export const usePilotStore = create<PilotState>((set, get) => ({
 
   setCurrentRunId: (currentRunId) => set({ currentRunId }),
   setTask: (currentTask) => set({ currentTask }),
-  updateTask: (patch) => set((s) => ({ currentTask: s.currentTask ? { ...s.currentTask, ...patch } : null })),
+  updateTask: (patch) =>
+    set((s) => ({ currentTask: s.currentTask ? { ...s.currentTask, ...patch } : null })),
   setSteps: (steps) => set({ steps }),
   updateStep: (stepId, patch) =>
-    set((s) => ({ steps: s.steps.map((step) => (step.id === stepId ? { ...step, ...patch } : step)) })),
+    set((s) => ({
+      steps: s.steps.map((step) => (step.id === stepId ? { ...step, ...patch } : step)),
+    })),
   setAgentStatus: (agentStatus) => set({ agentStatus }),
   setControlOwner: (controlOwner) => set({ controlOwner }),
   setReconnecting: (reconnecting) => set({ reconnecting }),
 
-  setTabs: (tabs) => set({ browserTabs: tabs, activeTabId: tabs.find((t) => t.active)?.id ?? tabs.at(-1)?.id ?? null }),
+  setTabs: (tabs) =>
+    set({
+      browserTabs: tabs,
+      activeTabId: tabs.find((t) => t.active)?.id ?? tabs.at(-1)?.id ?? null,
+    }),
   setLastFrame: (data, viewport) => set({ lastFrame: data, lastFrameViewport: viewport }),
   setCursor: (cursor) => set({ cursor }),
   setElementTable: (elementTable) => set({ elementTable }),
@@ -238,7 +246,7 @@ export const usePilotStore = create<PilotState>((set, get) => ({
   appendAssistantDelta: (delta) =>
     set((s) => ({
       serverMessages: s.serverMessages.map((m) =>
-        m.id === s.currentAssistantId ? { ...m, text: m.text + delta } : m
+        m.id === s.currentAssistantId ? { ...m, text: m.text + delta } : m,
       ),
     })),
   finalizeAssistantMessage: () => set({ currentAssistantId: null }),

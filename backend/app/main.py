@@ -47,8 +47,8 @@ def create_app() -> FastAPI:
 
     # ── Routers ──────────────────────────────────────────────────────────
     from app.api.auth import router as auth_router
-    from app.api.threads import router as threads_router
     from app.api.runs import router as runs_router
+    from app.api.threads import router as threads_router
     from app.api.ws import router as ws_router
 
     app.include_router(auth_router)

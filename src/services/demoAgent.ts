@@ -28,7 +28,12 @@ const scenarios: Record<DemoScenario, { title: string; url: string; steps: DemoS
       { target: "Open flight search", operation: "CLICK", elementIndex: 3, durationMs: 800 },
       { target: "Enter destination Dubai", operation: "TYPE", elementIndex: 14, durationMs: 600 },
       { target: "Choose travel dates", operation: "SELECT", elementIndex: 18, durationMs: 900 },
-      { target: "Compare the best fares", operation: "SCROLL_DOWN", elementIndex: 27, durationMs: 700 },
+      {
+        target: "Compare the best fares",
+        operation: "SCROLL_DOWN",
+        elementIndex: 27,
+        durationMs: 700,
+      },
       { target: "Select Emirates nonstop", operation: "CLICK", elementIndex: 31, durationMs: 500 },
     ],
   },
@@ -49,7 +54,12 @@ const scenarios: Record<DemoScenario, { title: string; url: string; steps: DemoS
     steps: [
       { target: "Search trusted retailers", operation: "TYPE", elementIndex: 5, durationMs: 600 },
       { target: "Open product results", operation: "CLICK", elementIndex: 11, durationMs: 700 },
-      { target: "Compare specifications", operation: "SCROLL_DOWN", elementIndex: 17, durationMs: 800 },
+      {
+        target: "Compare specifications",
+        operation: "SCROLL_DOWN",
+        elementIndex: 17,
+        durationMs: 800,
+      },
       { target: "Check review summaries", operation: "CLICK", elementIndex: 26, durationMs: 600 },
       { target: "Rank the best options", operation: "DONE", elementIndex: 33, durationMs: 400 },
     ],

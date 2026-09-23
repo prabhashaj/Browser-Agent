@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { KeyRound, Eye, EyeOff } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +40,12 @@ export function SecretModal({ onProvide, onCancel }: SecretModalProps) {
   };
 
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) cancel(); }}>
+    <Dialog
+      open
+      onOpenChange={(open) => {
+        if (!open) cancel();
+      }}
+    >
       <DialogContent className="max-w-sm gap-0 p-0 overflow-hidden" aria-describedby="secret-desc">
         <div className="flex items-center gap-3 border-b border-border p-5">
           <div className="grid size-9 place-items-center rounded-xl bg-agent-soft text-agent">
@@ -62,13 +73,17 @@ export function SecretModal({ onProvide, onCancel }: SecretModalProps) {
                     placeholder={`Enter ${field.label.toLowerCase()}`}
                     autoComplete="off"
                     value={values[field.key] ?? ""}
-                    onChange={(e) => setValues((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    onChange={(e) =>
+                      setValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                    }
                     className="pr-10"
                   />
                   {isPassword && (
                     <button
                       type="button"
-                      onClick={() => setVisible((prev) => ({ ...prev, [field.key]: !prev[field.key] }))}
+                      onClick={() =>
+                        setVisible((prev) => ({ ...prev, [field.key]: !prev[field.key] }))
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       aria-label={showPlain ? "Hide value" : "Show value"}
                     >

@@ -1,166 +1,334 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pilot Demo — Food Order</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; background: #fff7ed; color: #0f172a; min-height: 100vh; }
-  header { background: #ea580c; color: white; padding: 14px 24px; display: flex; align-items: center; gap: 12px; }
-  header h1 { font-size: 18px; font-weight: 700; }
-  .search { padding: 20px 24px; max-width: 700px; margin: 0 auto; }
-  .search input { width: 100%; padding: 12px 16px; border: 1.5px solid #fed7aa; border-radius: 10px; font-size: 15px; outline: none; }
-  .search input:focus { border-color: #ea580c; }
-  .section { max-width: 700px; margin: 0 auto 32px; padding: 0 24px; }
-  .section h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
-  .restaurant-card { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 6px #0001; cursor: pointer; transition: box-shadow .15s; }
-  .restaurant-card:hover { box-shadow: 0 4px 16px #0002; }
-  .rest-name { font-weight: 700; font-size: 15px; }
-  .rest-meta { color: #64748b; font-size: 13px; margin-top: 2px; }
-  .rating { color: #f59e0b; font-weight: 700; }
-  .menu { display: none; }
-  .menu-item { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 6px #0001; }
-  .item-name { font-weight: 700; }
-  .item-desc { color: #64748b; font-size: 13px; margin-top: 2px; }
-  .item-price { font-size: 18px; font-weight: 800; color: #ea580c; }
-  .add-btn { padding: 8px 20px; background: #ea580c; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-  .add-btn:hover { background: #c2410c; }
-  .back-btn { background: none; border: none; color: #ea580c; font-weight: 600; cursor: pointer; font-size: 14px; margin-bottom: 16px; }
-  #cart { display: none; max-width: 700px; margin: 0 auto 40px; padding: 0 24px; }
-  .cart-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 6px #0001; }
-  .place-btn { width: 100%; margin-top: 16px; padding: 14px; background: #16a34a; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
-  #confirm { display: none; max-width: 700px; margin: 0 auto 40px; padding: 0 24px; }
-  .confirm-box { background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 24px; }
-  .confirm-box h2 { color: #16a34a; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-</style>
-</head>
-<body>
-<header>
-  <span style="font-size:22px">🍕</span>
-  <h1>PilotEats</h1>
-</header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pilot Demo — Food Order</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        background: #fff7ed;
+        color: #0f172a;
+        min-height: 100vh;
+      }
+      header {
+        background: #ea580c;
+        color: white;
+        padding: 14px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      header h1 {
+        font-size: 18px;
+        font-weight: 700;
+      }
+      .search {
+        padding: 20px 24px;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+      .search input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1.5px solid #fed7aa;
+        border-radius: 10px;
+        font-size: 15px;
+        outline: none;
+      }
+      .search input:focus {
+        border-color: #ea580c;
+      }
+      .section {
+        max-width: 700px;
+        margin: 0 auto 32px;
+        padding: 0 24px;
+      }
+      .section h2 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+      .restaurant-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 1px 6px #0001;
+        cursor: pointer;
+        transition: box-shadow 0.15s;
+      }
+      .restaurant-card:hover {
+        box-shadow: 0 4px 16px #0002;
+      }
+      .rest-name {
+        font-weight: 700;
+        font-size: 15px;
+      }
+      .rest-meta {
+        color: #64748b;
+        font-size: 13px;
+        margin-top: 2px;
+      }
+      .rating {
+        color: #f59e0b;
+        font-weight: 700;
+      }
+      .menu {
+        display: none;
+      }
+      .menu-item {
+        background: white;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 1px 6px #0001;
+      }
+      .item-name {
+        font-weight: 700;
+      }
+      .item-desc {
+        color: #64748b;
+        font-size: 13px;
+        margin-top: 2px;
+      }
+      .item-price {
+        font-size: 18px;
+        font-weight: 800;
+        color: #ea580c;
+      }
+      .add-btn {
+        padding: 8px 20px;
+        background: #ea580c;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .add-btn:hover {
+        background: #c2410c;
+      }
+      .back-btn {
+        background: none;
+        border: none;
+        color: #ea580c;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+      #cart {
+        display: none;
+        max-width: 700px;
+        margin: 0 auto 40px;
+        padding: 0 24px;
+      }
+      .cart-box {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 1px 6px #0001;
+      }
+      .place-btn {
+        width: 100%;
+        margin-top: 16px;
+        padding: 14px;
+        background: #16a34a;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      #confirm {
+        display: none;
+        max-width: 700px;
+        margin: 0 auto 40px;
+        padding: 0 24px;
+      }
+      .confirm-box {
+        background: #f0fdf4;
+        border: 1.5px solid #86efac;
+        border-radius: 12px;
+        padding: 24px;
+      }
+      .confirm-box h2 {
+        color: #16a34a;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span style="font-size: 22px">🍕</span>
+      <h1>PilotEats</h1>
+    </header>
 
-<div class="search" style="margin-top:20px;">
-  <input id="search-input" type="text" placeholder="Search restaurants or dishes…" oninput="filterRestaurants()">
-</div>
+    <div class="search" style="margin-top: 20px">
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search restaurants or dishes…"
+        oninput="filterRestaurants()"
+      />
+    </div>
 
-<div class="section" id="restaurants">
-  <h2>Nearby restaurants</h2>
-  <div class="restaurant-card" id="rest-piccolo" onclick="openMenu('piccolo')">
-    <div>
-      <div class="rest-name">🍕 Piccolo Forno</div>
-      <div class="rest-meta">Italian · Pizza · 0.3 mi · 22–35 min</div>
+    <div class="section" id="restaurants">
+      <h2>Nearby restaurants</h2>
+      <div class="restaurant-card" id="rest-piccolo" onclick="openMenu('piccolo')">
+        <div>
+          <div class="rest-name">🍕 Piccolo Forno</div>
+          <div class="rest-meta">Italian · Pizza · 0.3 mi · 22–35 min</div>
+        </div>
+        <div class="rating">★ 4.8</div>
+      </div>
+      <div class="restaurant-card" id="rest-burger" onclick="openMenu('burger')">
+        <div>
+          <div class="rest-name">🍔 Stack & Co</div>
+          <div class="rest-meta">American · Burgers · 0.6 mi · 18–30 min</div>
+        </div>
+        <div class="rating">★ 4.5</div>
+      </div>
+      <div class="restaurant-card" id="rest-sushi" onclick="openMenu('sushi')">
+        <div>
+          <div class="rest-name">🍱 Sakura Sushi</div>
+          <div class="rest-meta">Japanese · Sushi · 0.9 mi · 30–45 min</div>
+        </div>
+        <div class="rating">★ 4.7</div>
+      </div>
     </div>
-    <div class="rating">★ 4.8</div>
-  </div>
-  <div class="restaurant-card" id="rest-burger" onclick="openMenu('burger')">
-    <div>
-      <div class="rest-name">🍔 Stack & Co</div>
-      <div class="rest-meta">American · Burgers · 0.6 mi · 18–30 min</div>
-    </div>
-    <div class="rating">★ 4.5</div>
-  </div>
-  <div class="restaurant-card" id="rest-sushi" onclick="openMenu('sushi')">
-    <div>
-      <div class="rest-name">🍱 Sakura Sushi</div>
-      <div class="rest-meta">Japanese · Sushi · 0.9 mi · 30–45 min</div>
-    </div>
-    <div class="rating">★ 4.7</div>
-  </div>
-</div>
 
-<div class="section menu" id="menu-piccolo">
-  <button class="back-btn" onclick="closeMenu()">← Back</button>
-  <h2>Piccolo Forno</h2>
-  <div class="menu-item">
-    <div>
-      <div class="item-name">Margherita Pizza</div>
-      <div class="item-desc">San Marzano tomato, fresh mozzarella, basil</div>
+    <div class="section menu" id="menu-piccolo">
+      <button class="back-btn" onclick="closeMenu()">← Back</button>
+      <h2>Piccolo Forno</h2>
+      <div class="menu-item">
+        <div>
+          <div class="item-name">Margherita Pizza</div>
+          <div class="item-desc">San Marzano tomato, fresh mozzarella, basil</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px">
+          <div class="item-price">$16.99</div>
+          <button
+            class="add-btn"
+            id="add-margherita"
+            onclick="addToCart('Margherita Pizza', '$16.99')"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div>
+          <div class="item-name">Quattro Stagioni</div>
+          <div class="item-desc">Ham, mushrooms, artichokes, olives</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px">
+          <div class="item-price">$19.99</div>
+          <button class="add-btn" onclick="addToCart('Quattro Stagioni', '$19.99')">Add</button>
+        </div>
+      </div>
+      <div class="menu-item">
+        <div>
+          <div class="item-name">Tiramisu</div>
+          <div class="item-desc">Classic Italian dessert, espresso & mascarpone</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px">
+          <div class="item-price">$7.99</div>
+          <button class="add-btn" onclick="addToCart('Tiramisu', '$7.99')">Add</button>
+        </div>
+      </div>
     </div>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <div class="item-price">$16.99</div>
-      <button class="add-btn" id="add-margherita" onclick="addToCart('Margherita Pizza', '$16.99')">Add</button>
-    </div>
-  </div>
-  <div class="menu-item">
-    <div>
-      <div class="item-name">Quattro Stagioni</div>
-      <div class="item-desc">Ham, mushrooms, artichokes, olives</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <div class="item-price">$19.99</div>
-      <button class="add-btn" onclick="addToCart('Quattro Stagioni', '$19.99')">Add</button>
-    </div>
-  </div>
-  <div class="menu-item">
-    <div>
-      <div class="item-name">Tiramisu</div>
-      <div class="item-desc">Classic Italian dessert, espresso & mascarpone</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <div class="item-price">$7.99</div>
-      <button class="add-btn" onclick="addToCart('Tiramisu', '$7.99')">Add</button>
-    </div>
-  </div>
-</div>
 
-<div id="cart">
-  <div class="cart-box">
-    <h2 style="font-size:17px;font-weight:700;margin-bottom:12px;">Your order</h2>
-    <div id="cart-items"></div>
-    <div style="display:flex;justify-content:space-between;font-weight:700;margin-top:12px;padding-top:12px;border-top:1.5px solid #f1f5f9;">
-      <span>Total</span><span id="cart-total"></span>
+    <div id="cart">
+      <div class="cart-box">
+        <h2 style="font-size: 17px; font-weight: 700; margin-bottom: 12px">Your order</h2>
+        <div id="cart-items"></div>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1.5px solid #f1f5f9;
+          "
+        >
+          <span>Total</span><span id="cart-total"></span>
+        </div>
+        <button class="place-btn" id="place-order-btn" onclick="placeOrder()">Place order</button>
+      </div>
     </div>
-    <button class="place-btn" id="place-order-btn" onclick="placeOrder()">Place order</button>
-  </div>
-</div>
 
-<div id="confirm">
-  <div class="confirm-box">
-    <h2>✓ Order confirmed!</h2>
-    <p id="confirm-text" style="color:#166534;font-size:15px;margin-top:4px;"></p>
-    <p style="color:#64748b;font-size:13px;margin-top:8px;">Estimated delivery: 28 minutes</p>
-  </div>
-</div>
+    <div id="confirm">
+      <div class="confirm-box">
+        <h2>✓ Order confirmed!</h2>
+        <p id="confirm-text" style="color: #166534; font-size: 15px; margin-top: 4px"></p>
+        <p style="color: #64748b; font-size: 13px; margin-top: 8px">
+          Estimated delivery: 28 minutes
+        </p>
+      </div>
+    </div>
 
-<script>
-  let cartItems = [];
-  function filterRestaurants() {
-    const q = document.getElementById('search-input').value.toLowerCase();
-    ['piccolo','burger','sushi'].forEach(id => {
-      const el = document.getElementById('rest-' + id);
-      if (el) el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
-    });
-  }
-  function openMenu(id) {
-    document.getElementById('restaurants').style.display = 'none';
-    document.getElementById('menu-' + id).style.display = 'block';
-  }
-  function closeMenu() {
-    ['piccolo','burger','sushi'].forEach(id => {
-      const m = document.getElementById('menu-' + id);
-      if (m) m.style.display = 'none';
-    });
-    document.getElementById('restaurants').style.display = 'block';
-  }
-  function addToCart(name, price) {
-    cartItems.push({ name, price });
-    const total = cartItems.reduce((s, i) => s + parseFloat(i.price.replace('$','')), 0);
-    document.getElementById('cart-items').innerHTML = cartItems.map(i => `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${i.name}</span><span>${i.price}</span></div>`).join('');
-    document.getElementById('cart-total').textContent = '$' + total.toFixed(2);
-    document.getElementById('cart').style.display = 'block';
-    document.getElementById('cart').scrollIntoView({ behavior: 'smooth' });
-  }
-  function placeOrder() {
-    const items = cartItems.map(i => i.name).join(', ');
-    const total = cartItems.reduce((s, i) => s + parseFloat(i.price.replace('$','')), 0);
-    document.getElementById('cart').style.display = 'none';
-    document.getElementById('confirm').style.display = 'block';
-    document.getElementById('confirm-text').textContent = items + ' · $' + total.toFixed(2) + ' incl. delivery';
-    document.getElementById('confirm').scrollIntoView({ behavior: 'smooth' });
-    cartItems = [];
-  }
-</script>
-</body>
+    <script>
+      let cartItems = [];
+      function filterRestaurants() {
+        const q = document.getElementById("search-input").value.toLowerCase();
+        ["piccolo", "burger", "sushi"].forEach((id) => {
+          const el = document.getElementById("rest-" + id);
+          if (el) el.style.display = el.textContent.toLowerCase().includes(q) ? "" : "none";
+        });
+      }
+      function openMenu(id) {
+        document.getElementById("restaurants").style.display = "none";
+        document.getElementById("menu-" + id).style.display = "block";
+      }
+      function closeMenu() {
+        ["piccolo", "burger", "sushi"].forEach((id) => {
+          const m = document.getElementById("menu-" + id);
+          if (m) m.style.display = "none";
+        });
+        document.getElementById("restaurants").style.display = "block";
+      }
+      function addToCart(name, price) {
+        cartItems.push({ name, price });
+        const total = cartItems.reduce((s, i) => s + parseFloat(i.price.replace("$", "")), 0);
+        document.getElementById("cart-items").innerHTML = cartItems
+          .map(
+            (i) =>
+              `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${i.name}</span><span>${i.price}</span></div>`,
+          )
+          .join("");
+        document.getElementById("cart-total").textContent = "$" + total.toFixed(2);
+        document.getElementById("cart").style.display = "block";
+        document.getElementById("cart").scrollIntoView({ behavior: "smooth" });
+      }
+      function placeOrder() {
+        const items = cartItems.map((i) => i.name).join(", ");
+        const total = cartItems.reduce((s, i) => s + parseFloat(i.price.replace("$", "")), 0);
+        document.getElementById("cart").style.display = "none";
+        document.getElementById("confirm").style.display = "block";
+        document.getElementById("confirm-text").textContent =
+          items + " · $" + total.toFixed(2) + " incl. delivery";
+        document.getElementById("confirm").scrollIntoView({ behavior: "smooth" });
+        cartItems = [];
+      }
+    </script>
+  </body>
 </html>

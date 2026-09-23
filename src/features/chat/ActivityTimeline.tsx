@@ -27,10 +27,10 @@ function StepRow({ step }: { step: AgentStep }) {
           step.status === "done"
             ? "text-muted-foreground line-through"
             : step.status === "running"
-            ? "font-medium text-foreground"
-            : step.status === "blocked"
-            ? "text-destructive"
-            : "text-muted-foreground"
+              ? "font-medium text-foreground"
+              : step.status === "blocked"
+                ? "text-destructive"
+                : "text-muted-foreground"
         }`}
       >
         {step.target}
@@ -46,7 +46,8 @@ export function ActivityTimeline() {
   const steps = usePilotStore((s) => s.steps);
   const agentStatus = usePilotStore((s) => s.agentStatus);
 
-  const isActive = agentStatus === "running" || agentStatus === "thinking" || agentStatus === "waiting";
+  const isActive =
+    agentStatus === "running" || agentStatus === "thinking" || agentStatus === "waiting";
   if (!isActive && steps.length === 0) return null;
 
   return (

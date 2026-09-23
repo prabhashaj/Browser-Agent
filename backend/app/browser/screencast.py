@@ -25,7 +25,7 @@ class ScreencastSession:
 
     def __init__(
         self,
-        page: "Page",
+        page: Page,
         run_id: str,
         tab_id: str,
         fps: int = 10,
@@ -39,7 +39,7 @@ class ScreencastSession:
         self._task: asyncio.Task | None = None
         self._cdp = None
         self._stopped = False
-        self._emit_cb: "asyncio.coroutines.Coroutine | None" = None
+        self._emit_cb: asyncio.coroutines.Coroutine | None = None
         self._on_frame = None  # set by caller
 
     def set_frame_callback(self, cb):
@@ -92,7 +92,7 @@ class ScreencastSession:
         logger.info("Screencast stopped for run %s tab %s", self.run_id, self.tab_id)
 
 
-async def get_page_snapshot(page: "Page") -> str:
+async def get_page_snapshot(page: Page) -> str:
     """Capture a single JPEG screenshot and return as base64."""
     try:
         data = await page.screenshot(type="jpeg", quality=75, full_page=False)

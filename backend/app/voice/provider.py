@@ -10,7 +10,8 @@ changing the interface.
 from __future__ import annotations
 
 import logging
-from typing import AsyncGenerator, Protocol, runtime_checkable
+from collections.abc import AsyncGenerator
+from typing import Protocol, runtime_checkable
 
 logger = logging.getLogger(__name__)
 

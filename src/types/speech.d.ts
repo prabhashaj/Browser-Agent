@@ -1,3 +1,4 @@
+/* eslint-disable */
 // src/types/speech.d.ts
 
 declare var SpeechRecognition: any;
@@ -9,4 +10,3 @@ interface Window {
   SpeechRecognition?: any;
   webkitSpeechRecognition?: any;
 }
-

@@ -45,7 +45,9 @@ export function EmptyGreeting({ onPrompt }: EmptyGreetingProps) {
             className="group flex min-h-[72px] flex-col items-start gap-2 rounded-2xl border border-border bg-card px-4 py-3.5 text-left text-sm transition-all hover:border-agent/40 hover:bg-accent hover:shadow-sm active:scale-[0.98]"
           >
             <Icon className="size-4 text-agent opacity-80 transition-opacity group-hover:opacity-100" />
-            <span className="leading-5 text-muted-foreground group-hover:text-foreground transition-colors">{label}</span>
+            <span className="leading-5 text-muted-foreground group-hover:text-foreground transition-colors">
+              {label}
+            </span>
           </button>
         ))}
       </div>

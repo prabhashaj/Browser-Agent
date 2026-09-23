@@ -17,7 +17,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +101,7 @@ class SecretBroker:
             for k, v in values.items():
                 self._store_value(k, v)
             return values
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Secret request %s timed out for run %s", req.secret_id, self.run_id)
             raise
         finally:

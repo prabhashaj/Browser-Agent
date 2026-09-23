@@ -1,8 +1,9 @@
 """backend/tests/test_observer.py — unit tests for the element observer JS extractor."""
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 
 # We mock the Playwright page so no real browser is needed

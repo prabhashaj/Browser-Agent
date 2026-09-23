@@ -23,6 +23,7 @@ export interface VoiceProviderOptions {
 }
 
 export class WebSpeechProvider {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private recognition: any = null;
   private synthesis: SpeechSynthesis | null = null;
   private audioCtx: AudioContext | null = null;
@@ -39,8 +40,12 @@ export class WebSpeechProvider {
   onSpeakStart: (() => void) | null = null;
   onSpeakEnd: (() => void) | null = null;
 
-  get isListening() { return this._isListening; }
-  get isSpeaking() { return this._isSpeaking; }
+  get isListening() {
+    return this._isListening;
+  }
+  get isSpeaking() {
+    return this._isSpeaking;
+  }
 
   static isSupported(): boolean {
     return (
@@ -53,8 +58,19 @@ export class WebSpeechProvider {
     if (this._isListening) return;
 
     // SpeechRecognition
-    const SR = (window as Window & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition })["SpeechRecognition"] ??
-               (window as Window & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition })["webkitSpeechRecognition"];
+    const SR =
+      (
+        window as Window & {
+          SpeechRecognition?: typeof SpeechRecognition;
+          webkitSpeechRecognition?: typeof SpeechRecognition;
+        }
+      )["SpeechRecognition"] ??
+      (
+        window as Window & {
+          SpeechRecognition?: typeof SpeechRecognition;
+          webkitSpeechRecognition?: typeof SpeechRecognition;
+        }
+      )["webkitSpeechRecognition"];
     if (!SR) {
       this.onError?.("Speech recognition not supported in this browser.");
       return;
@@ -92,7 +108,11 @@ export class WebSpeechProvider {
     this.recognition.onend = () => {
       // Auto-restart if still listening (browser may stop after silence)
       if (this._isListening && this.recognition) {
-        try { this.recognition.start(); } catch { /* ignore already-started */ }
+        try {
+          this.recognition.start();
+        } catch {
+          /* ignore already-started */
+        }
       }
     };
 
@@ -123,7 +143,11 @@ export class WebSpeechProvider {
   stopListening(): void {
     this._isListening = false;
     if (this.recognition) {
-      try { this.recognition.stop(); } catch { /* ignore */ }
+      try {
+        this.recognition.stop();
+      } catch {
+        /* ignore */
+      }
       this.recognition = null;
     }
     if (this.volumeTimer) {
@@ -156,11 +180,14 @@ export class WebSpeechProvider {
 
     // Prefer a natural-sounding voice
     const voices = this.synthesis.getVoices();
-    const preferred = voices.find(
-      (v) =>
-        v.lang.startsWith(utterance.lang.split("-")[0] ?? "en") &&
-        (v.name.includes("Natural") || v.name.includes("Neural") || v.name.includes("Enhanced"))
-    ) ?? voices.find((v) => v.lang.startsWith("en")) ?? voices[0];
+    const preferred =
+      voices.find(
+        (v) =>
+          v.lang.startsWith(utterance.lang.split("-")[0] ?? "en") &&
+          (v.name.includes("Natural") || v.name.includes("Neural") || v.name.includes("Enhanced")),
+      ) ??
+      voices.find((v) => v.lang.startsWith("en")) ??
+      voices[0];
     if (preferred) utterance.voice = preferred;
 
     return new Promise<void>((resolve) => {

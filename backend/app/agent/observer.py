@@ -119,7 +119,7 @@ _TEXT_EXTRACT_JS = """
 """
 
 
-async def observe(page: "Page") -> tuple[list[dict], str, str]:
+async def observe(page: Page) -> tuple[list[dict], str, str]:
     """
     Extract the interactive element table and page text from a Playwright page.
 

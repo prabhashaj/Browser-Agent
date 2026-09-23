@@ -29,7 +29,7 @@ NAV_TIMEOUT_MS = 30_000
 ACTION_TIMEOUT_MS = 10_000
 
 
-async def execute(page: "Page", decision: DecisionOutput, elements: list[dict]) -> str:
+async def execute(page: Page, decision: DecisionOutput, elements: list[dict]) -> str:
     """
     Execute one DecisionOutput on the Playwright page.
     Returns a human-readable result string.
@@ -67,7 +67,7 @@ async def execute(page: "Page", decision: DecisionOutput, elements: list[dict]) 
         return "Unknown operation (skipped)"
 
 
-async def _get_element(page: "Page", element_index: int | None, elements: list[dict]):
+async def _get_element(page: Page, element_index: int | None, elements: list[dict]):
     """Return the Playwright ElementHandle for a given element index."""
     if element_index is None or not elements:
         raise ValueError("No element index for this action")
@@ -88,14 +88,14 @@ async def _get_element(page: "Page", element_index: int | None, elements: list[d
     return x, y
 
 
-async def _click(page: "Page", decision: DecisionOutput, elements: list[dict]) -> str:
+async def _click(page: Page, decision: DecisionOutput, elements: list[dict]) -> str:
     x, y = await _get_element(page, decision.element_index, elements)
     await page.mouse.click(x, y)
     await asyncio.sleep(STABILITY_WAIT_MS / 1000)
     return f"Clicked element {decision.element_index}"
 
 
-async def _type(page: "Page", decision: DecisionOutput, elements: list[dict]) -> str:
+async def _type(page: Page, decision: DecisionOutput, elements: list[dict]) -> str:
     x, y = await _get_element(page, decision.element_index, elements)
     await page.mouse.click(x, y)
     # Triple-click to select existing content
@@ -107,7 +107,7 @@ async def _type(page: "Page", decision: DecisionOutput, elements: list[dict]) ->
     return f"Typed into element {decision.element_index}"
 
 
-async def _select(page: "Page", decision: DecisionOutput, elements: list[dict]) -> str:
+async def _select(page: Page, decision: DecisionOutput, elements: list[dict]) -> str:
     if decision.element_index is None:
         raise ValueError("SELECT requires an element_index")
     x, y = await _get_element(page, decision.element_index, elements)
@@ -126,7 +126,7 @@ async def _select(page: "Page", decision: DecisionOutput, elements: list[dict]) 
     return f"Selected '{decision.text}' in element {decision.element_index}"
 
 
-async def _navigate(page: "Page", decision: DecisionOutput) -> str:
+async def _navigate(page: Page, decision: DecisionOutput) -> str:
     url = decision.url or ""
     if not url:
         raise ValueError("NAVIGATE requires a url")

@@ -46,7 +46,6 @@ function IndexPage() {
       }
     }
     void init();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading || !threadId) {
@@ -60,11 +59,5 @@ function IndexPage() {
     );
   }
 
-  return (
-    <PilotShell
-      threadId={threadId}
-      onProvideSecret={() => {}}
-      onCancelSecret={() => {}}
-    />
-  );
+  return <PilotShell threadId={threadId} onProvideSecret={() => {}} onCancelSecret={() => {}} />;
 }

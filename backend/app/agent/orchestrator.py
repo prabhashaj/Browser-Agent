@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.api.ws import CMD_QUEUES, RUN_QUEUES, cleanup_queues, get_or_create_queues
 from app.config import get_settings
@@ -32,7 +32,7 @@ def _next_seq(run_id: str) -> int:
 
 
 def _ts() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 async def emit(run_id: str, event: dict) -> None:
@@ -43,7 +43,7 @@ async def emit(run_id: str, event: dict) -> None:
         event.setdefault("ts", _ts())
         try:
             await asyncio.wait_for(q.put(event), timeout=5.0)
-        except (asyncio.TimeoutError, asyncio.QueueFull):
+        except (TimeoutError, asyncio.QueueFull):
             logger.warning("Event queue full/timeout for run %s: %s", run_id, event.get("type"))
 
 
@@ -55,12 +55,13 @@ async def get_command(run_id: str, timeout: float | None = None) -> dict | None:
         if timeout is not None:
             return await asyncio.wait_for(q.get(), timeout=timeout)
         return q.get_nowait()
-    except (asyncio.TimeoutError, asyncio.QueueEmpty):
+    except (TimeoutError, asyncio.QueueEmpty):
         return None
 
 
 async def _is_cancelled(run_id: str) -> bool:
     from sqlalchemy import select
+
     from app.db.models import Run
     async with AsyncSessionLocal() as db:
         result = await db.execute(select(Run).where(Run.id == run_id))
@@ -75,6 +76,7 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
     async with AsyncSessionLocal() as db:
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
+
         from app.db.models import Message, Run, Thread
 
         result = await db.execute(select(Run).where(Run.id == run_id))
@@ -132,8 +134,8 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
 
             await emit(run_id, {"type": "task_started", "goal": task_goal, "title": task_goal[:120]})
 
-            from app.browser.session_manager import BrowserSession
             from app.agent.secrets import SecretBroker
+            from app.browser.session_manager import BrowserSession
 
             secret_broker = SecretBroker(
                 run_id=run_id,
@@ -147,10 +149,11 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
                 async with BrowserSession(run_id, settings, _emit_for_browser) as browser:
                     await browser.navigate(start_url)
 
-                    from app.agent.observer import observe
                     from app.agent.decider.llm import LLMDecider
                     from app.agent.executor import execute
-                    from app.agent.policy import PolicyContext, PolicyVerdict, evaluate as policy_eval
+                    from app.agent.observer import observe
+                    from app.agent.policy import PolicyContext, PolicyVerdict
+                    from app.agent.policy import evaluate as policy_eval
                     from app.agent.secrets import SecretField, SecretRequest, is_secret_field
                     from app.browser.screencast import get_page_snapshot
 
@@ -297,7 +300,7 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
                                 try:
                                     provided = await secret_broker.request(secret_req)
                                     decision.text = provided.get("value", "")
-                                except asyncio.TimeoutError:
+                                except TimeoutError:
                                     await emit(run_id, {"type": "task_failed", "message": "Secret not provided in time."})
                                     run.status = "failed"
                                     await db.commit()
@@ -325,11 +328,12 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
                         # Check time budget
                         async with AsyncSessionLocal() as check_db:
                             from sqlalchemy import select
+
                             from app.db.models import Run as RunModel
                             check = await check_db.execute(select(RunModel).where(RunModel.id == run_id))
                             check_run = check.scalar_one_or_none()
                             if check_run:
-                                elapsed = (datetime.now(timezone.utc) - check_run.started_at).total_seconds()
+                                elapsed = (datetime.now(UTC) - check_run.started_at).total_seconds()
                                 if elapsed > settings.max_run_seconds:
                                     logger.warning("Run %s exceeded time budget (%ds)", run_id, settings.max_run_seconds)
                                     break

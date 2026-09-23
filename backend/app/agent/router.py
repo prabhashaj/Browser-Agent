@@ -1,7 +1,6 @@
 """backend/app/agent/router.py — Decides: chat reply vs. start_browser_task."""
 from __future__ import annotations
 
-import json
 import logging
 
 from app.llm.provider import ChatMessage, LLMProvider

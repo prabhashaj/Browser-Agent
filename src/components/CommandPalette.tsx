@@ -25,9 +25,14 @@ export function CommandPalette({ open, onClose, onSettingsOpen }: CommandPalette
   }, [open, onClose]);
 
   // Reset search on open
-  useEffect(() => { if (open) setSearch(""); }, [open]);
+  useEffect(() => {
+    if (open) setSearch("");
+  }, [open]);
 
-  const run = (fn: () => void) => { fn(); onClose(); };
+  const run = (fn: () => void) => {
+    fn();
+    onClose();
+  };
 
   return (
     <AnimatePresence>
@@ -78,30 +83,48 @@ export function CommandPalette({ open, onClose, onSettingsOpen }: CommandPalette
                   No commands found.
                 </Command.Empty>
 
-                <Command.Group heading="Conversation" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide">
+                <Command.Group
+                  heading="Conversation"
+                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide"
+                >
                   <CmdItem
                     id="cmd-new"
                     icon={<MessageSquarePlus className="size-4" />}
                     label="New conversation"
-                    onSelect={() => run(() => { document.dispatchEvent(new CustomEvent("pilot:new-thread")); })}
+                    onSelect={() =>
+                      run(() => {
+                        document.dispatchEvent(new CustomEvent("pilot:new-thread"));
+                      })
+                    }
                   />
                   <CmdItem
                     id="cmd-history"
                     icon={<Clock className="size-4" />}
                     label="Open history"
-                    onSelect={() => run(() => { document.dispatchEvent(new Event("pilot:open-history")); })}
+                    onSelect={() =>
+                      run(() => {
+                        document.dispatchEvent(new Event("pilot:open-history"));
+                      })
+                    }
                   />
                   <CmdItem
                     id="cmd-clear"
                     icon={<Trash2 className="size-4" />}
                     label="Clear current conversation"
-                    onSelect={() => run(() => { document.dispatchEvent(new Event("pilot:clear-thread")); })}
+                    onSelect={() =>
+                      run(() => {
+                        document.dispatchEvent(new Event("pilot:clear-thread"));
+                      })
+                    }
                   />
                 </Command.Group>
 
                 <Command.Separator className="my-1 h-px bg-border" />
 
-                <Command.Group heading="Appearance" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide">
+                <Command.Group
+                  heading="Appearance"
+                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide"
+                >
                   <CmdItem
                     id="cmd-dark"
                     icon={<Moon className="size-4" />}
@@ -118,7 +141,10 @@ export function CommandPalette({ open, onClose, onSettingsOpen }: CommandPalette
 
                 <Command.Separator className="my-1 h-px bg-border" />
 
-                <Command.Group heading="Settings" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide">
+                <Command.Group
+                  heading="Settings"
+                  className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wide"
+                >
                   <CmdItem
                     id="cmd-settings"
                     icon={<Keyboard className="size-4" />}

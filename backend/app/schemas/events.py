@@ -14,10 +14,9 @@ from __future__ import annotations
 import json
 import sys
 from enum import StrEnum
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
-
 
 # ── Primitive enums ────────────────────────────────────────────────────────────
 
@@ -248,25 +247,7 @@ class ReconnectSnapshotEvent(EventBase):
 # ── Discriminated union ────────────────────────────────────────────────────────
 
 ServerEvent = Annotated[
-    Union[
-        MessageDeltaEvent,
-        MessageDoneEvent,
-        TaskStartedEvent,
-        PlanEvent,
-        StepStartedEvent,
-        StepFinishedEvent,
-        StepFailedEvent,
-        TabsUpdatedEvent,
-        FrameEvent,
-        ElementTableEvent,
-        ActionChosenEvent,
-        ApprovalRequiredEvent,
-        SecretRequiredEvent,
-        BlockedEvent,
-        TaskFinishedEvent,
-        TaskFailedEvent,
-        ReconnectSnapshotEvent,
-    ],
+    MessageDeltaEvent | MessageDoneEvent | TaskStartedEvent | PlanEvent | StepStartedEvent | StepFinishedEvent | StepFailedEvent | TabsUpdatedEvent | FrameEvent | ElementTableEvent | ActionChosenEvent | ApprovalRequiredEvent | SecretRequiredEvent | BlockedEvent | TaskFinishedEvent | TaskFailedEvent | ReconnectSnapshotEvent,
     Field(discriminator="type"),
 ]
 
@@ -322,16 +303,7 @@ class ResumeCmd(BaseModel):
 
 
 ClientCommand = Annotated[
-    Union[
-        UserMessageCmd,
-        StopCmd,
-        ApproveCmd,
-        DeclineCmd,
-        ProvideSecretCmd,
-        TakeoverStartCmd,
-        TakeoverInputCmd,
-        ResumeCmd,
-    ],
+    UserMessageCmd | StopCmd | ApproveCmd | DeclineCmd | ProvideSecretCmd | TakeoverStartCmd | TakeoverInputCmd | ResumeCmd,
     Field(discriminator="cmd"),
 ]
 

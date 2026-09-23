@@ -1,9 +1,11 @@
 """backend/tests/test_ssrf.py — unit tests for the SSRF guard."""
 from __future__ import annotations
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from app.browser.profiles import SSRFError, validate_url, is_safe_url
+
+from app.browser.profiles import SSRFError, is_safe_url, validate_url
 
 
 def _mock_dns(ip: str):

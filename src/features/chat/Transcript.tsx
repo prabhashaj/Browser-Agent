@@ -24,7 +24,11 @@ function AssistantBubble({ message }: { message: ServerMessage }) {
   const isStreaming = message.text === "";
   let result: RunResult | null = null;
   if (message.resultJson) {
-    try { result = JSON.parse(message.resultJson) as RunResult; } catch { /* ignore */ }
+    try {
+      result = JSON.parse(message.resultJson) as RunResult;
+    } catch {
+      /* ignore */
+    }
   }
 
   return (
@@ -85,11 +89,7 @@ export function Transcript({ messages }: TranscriptProps) {
             transition={{ duration: 0.22 }}
             className="mb-5"
           >
-            {msg.role === "user" ? (
-              <UserBubble message={msg} />
-            ) : (
-              <AssistantBubble message={msg} />
-            )}
+            {msg.role === "user" ? <UserBubble message={msg} /> : <AssistantBubble message={msg} />}
           </motion.div>
         ))}
       </AnimatePresence>

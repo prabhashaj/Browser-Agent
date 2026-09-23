@@ -1,4 +1,5 @@
 # Pilot roadmap
+
 - [x] Foundation, visual tokens, identity, and AI chat primitives
 - [x] Typed Zustand state and mock agent event service
 - [x] Threaded browser-local chat routes and history

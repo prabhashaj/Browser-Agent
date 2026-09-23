@@ -54,7 +54,7 @@ export function VoiceMode({ session, onClose }: VoiceModeProps) {
       // After sending, switch back to listening
       setTimeout(() => startListening(), 500);
     },
-    [session, setVoiceState, startListening]
+    [session, setVoiceState, startListening],
   );
 
   // Init provider
@@ -77,12 +77,15 @@ export function VoiceMode({ session, onClose }: VoiceModeProps) {
         prev.map((_, i) => {
           const base = 0.05 + Math.sin(Date.now() / 300 + i) * 0.05;
           return Math.max(0.05, Math.min(1, level * (0.5 + Math.random() * 0.5) + base));
-        })
+        }),
       );
     };
 
     p.onError = (err) => console.warn("Voice error:", err);
-    p.onSpeakStart = () => { setPhase("speaking"); setVoiceState("speaking"); };
+    p.onSpeakStart = () => {
+      setPhase("speaking");
+      setVoiceState("speaking");
+    };
     p.onSpeakEnd = () => startListening();
 
     providerRef.current = p;
@@ -115,15 +118,19 @@ export function VoiceMode({ session, onClose }: VoiceModeProps) {
   useEffect(() => {
     if (phase !== "listening") return;
     const id = setInterval(() => {
-      setBars((prev) => prev.map((_, i) => 0.06 + Math.abs(Math.sin(Date.now() / 500 + i * 0.4)) * 0.12));
+      setBars((prev) =>
+        prev.map((_, i) => 0.06 + Math.abs(Math.sin(Date.now() / 500 + i * 0.4)) * 0.12),
+      );
     }, 80);
     return () => clearInterval(id);
   }, [phase]);
 
   const barColor =
-    phase === "listening" ? "var(--agent)" :
-    phase === "speaking"  ? "oklch(0.65 0.17 150)" :
-    "oklch(0.65 0.15 60)";
+    phase === "listening"
+      ? "var(--agent)"
+      : phase === "speaking"
+        ? "oklch(0.65 0.17 150)"
+        : "oklch(0.65 0.15 60)";
 
   return (
     <AnimatePresence>
@@ -141,7 +148,10 @@ export function VoiceMode({ session, onClose }: VoiceModeProps) {
           variant="ghost"
           size="icon"
           className="absolute right-4 top-4 text-muted-foreground"
-          onClick={() => { providerRef.current?.destroy(); onClose(); }}
+          onClick={() => {
+            providerRef.current?.destroy();
+            onClose();
+          }}
           aria-label="Close voice mode"
         >
           <X className="size-5" />
@@ -166,7 +176,11 @@ export function VoiceMode({ session, onClose }: VoiceModeProps) {
             >
               <span className="live-dot" />
               <span className="text-sm font-semibold text-foreground capitalize">
-                {phase === "listening" ? "Listening…" : phase === "speaking" ? "Speaking…" : "Thinking…"}
+                {phase === "listening"
+                  ? "Listening…"
+                  : phase === "speaking"
+                    ? "Speaking…"
+                    : "Thinking…"}
               </span>
             </motion.div>
 
@@ -221,7 +235,10 @@ export function VoiceMode({ session, onClose }: VoiceModeProps) {
                   id="voice-stop-btn"
                   variant="outline"
                   className="gap-2"
-                  onClick={() => { providerRef.current?.stopListening(); onClose(); }}
+                  onClick={() => {
+                    providerRef.current?.stopListening();
+                    onClose();
+                  }}
                 >
                   <MicOff className="size-4" />
                   Stop

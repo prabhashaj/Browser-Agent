@@ -19,7 +19,12 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const setTheme = usePilotStore((s) => s.setTheme);
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <DialogContent className="max-w-sm" aria-describedby="settings-desc">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
@@ -67,8 +72,16 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               <Info className="mt-0.5 size-4 flex-shrink-0 text-muted-foreground" />
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p className="font-semibold text-foreground">Pilot AI Browser Agent</p>
-                <p>Chat with an AI that can browse the real web on your behalf. Every action requiring real-world consequences needs your explicit approval.</p>
-                <p>Set <code className="font-mono bg-border px-1 rounded">GEMINI_API_KEY</code> or <code className="font-mono bg-border px-1 rounded">ANTHROPIC_API_KEY</code> in <code className="font-mono bg-border px-1 rounded">.env</code> to connect a real agent.</p>
+                <p>
+                  Chat with an AI that can browse the real web on your behalf. Every action
+                  requiring real-world consequences needs your explicit approval.
+                </p>
+                <p>
+                  Set <code className="font-mono bg-border px-1 rounded">GEMINI_API_KEY</code> or{" "}
+                  <code className="font-mono bg-border px-1 rounded">ANTHROPIC_API_KEY</code> in{" "}
+                  <code className="font-mono bg-border px-1 rounded">.env</code> to connect a real
+                  agent.
+                </p>
               </div>
             </div>
           </div>
@@ -88,7 +101,9 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               ].map(([action, key]) => (
                 <div key={action} className="flex items-center justify-between">
                   <span className="text-muted-foreground">{action}</span>
-                  <kbd className="rounded-md border border-border bg-muted px-2 py-0.5 font-mono text-[10px]">{key}</kbd>
+                  <kbd className="rounded-md border border-border bg-muted px-2 py-0.5 font-mono text-[10px]">
+                    {key}
+                  </kbd>
                 </div>
               ))}
             </div>
