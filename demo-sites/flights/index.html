@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilot Demo — Flights</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f1f5f9; color: #0f172a; min-height: 100vh; }
+  header { background: #1e40af; color: white; padding: 14px 24px; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+  .search-box { background: white; padding: 24px; margin: 24px auto; max-width: 780px; border-radius: 16px; box-shadow: 0 2px 16px #0001; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  label { display: block; font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  input, select { width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 15px; outline: none; transition: border-color .15s; }
+  input:focus, select:focus { border-color: #3b82f6; }
+  button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .15s; }
+  button:hover { background: #1d4ed8; }
+  .results { max-width: 780px; margin: 0 auto 40px; display: none; flex-direction: column; gap: 12px; }
+  .card { background: white; border-radius: 12px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 8px #0001; }
+  .airline { font-weight: 700; font-size: 15px; }
+  .route { font-size: 13px; color: #64748b; margin-top: 2px; }
+  .price { font-size: 22px; font-weight: 800; color: #2563eb; }
+  .book-btn { padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; width: auto; }
+  .book-btn:hover { background: #1d4ed8; }
+  #confirm { display: none; max-width: 780px; margin: 0 auto 40px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 24px; }
+  #confirm h2 { color: #16a34a; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+  <h1>SkyPilot Flights</h1>
+</header>
+
+<div class="search-box">
+  <h2 style="font-size:20px;font-weight:700;margin-bottom:20px;">Search Flights</h2>
+  <div class="row">
+    <div>
+      <label for="from">From</label>
+      <input id="from" type="text" placeholder="City or airport" value="New York (JFK)">
+    </div>
+    <div>
+      <label for="to">To</label>
+      <input id="to" type="text" placeholder="City or airport" value="Dubai (DXB)">
+    </div>
+  </div>
+  <div class="row3">
+    <div>
+      <label for="depart">Depart</label>
+      <input id="depart" type="date">
+    </div>
+    <div>
+      <label for="return">Return</label>
+      <input id="return" type="date">
+    </div>
+    <div>
+      <label for="class">Class</label>
+      <select id="class">
+        <option>Economy</option>
+        <option>Business</option>
+        <option>First</option>
+      </select>
+    </div>
+  </div>
+  <button id="search-btn" onclick="showResults()">Search Flights</button>
+</div>
+
+<div class="results" id="results">
+  <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">3 flights found · JFK → DXB</h2>
+  <div class="card">
+    <div>
+      <div class="airline">✈ Emirates</div>
+      <div class="route">JFK → DXB · Nonstop · 12h 15m · Economy</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:20px;">
+      <div class="price">$842</div>
+      <button class="book-btn" id="book-emirates" onclick="bookFlight('Emirates', '$842')">Select</button>
+    </div>
+  </div>
+  <div class="card">
+    <div>
+      <div class="airline">✈ United Airlines</div>
+      <div class="route">JFK → DXB · 1 stop · 16h 30m · Economy</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:20px;">
+      <div class="price">$678</div>
+      <button class="book-btn" id="book-united" onclick="bookFlight('United Airlines', '$678')">Select</button>
+    </div>
+  </div>
+  <div class="card">
+    <div>
+      <div class="airline">✈ Qatar Airways</div>
+      <div class="route">JFK → DOH → DXB · 1 stop · 18h 00m · Economy</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:20px;">
+      <div class="price">$712</div>
+      <button class="book-btn" id="book-qatar" onclick="bookFlight('Qatar Airways', '$712')">Select</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirm">
+  <h2>✓ Flight Selected</h2>
+  <p id="confirm-text" style="color:#166534;font-size:15px;"></p>
+</div>
+
+<script>
+  function showResults() {
+    document.getElementById('results').style.display = 'flex';
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  }
+  function bookFlight(airline, price) {
+    const from = document.getElementById('from').value || 'JFK';
+    const to = document.getElementById('to').value || 'DXB';
+    document.getElementById('confirm').style.display = 'block';
+    document.getElementById('confirm-text').textContent =
+      airline + ' · ' + from + ' → ' + to + ' · ' + price + ' · Booking confirmed!';
+    document.getElementById('confirm').scrollIntoView({ behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
