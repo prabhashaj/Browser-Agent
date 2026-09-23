@@ -60,7 +60,6 @@ async def get_command(run_id: str, timeout: float | None = None) -> dict | None:
 
 
 async def _is_cancelled(run_id: str) -> bool:
-    """Check if user or kill-switch has cancelled this run."""
     from sqlalchemy import select
     from app.db.models import Run
     async with AsyncSessionLocal() as db:
@@ -105,6 +104,8 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
         from app.agent.router import route
         router_result = await route(goal, history[:-1] if history else [], llm)
 
+        final_result: dict | None = None
+
         if router_result.action == "chat":
             # ── Chat path ──────────────────────────────────────────────────────
             full_text = ""
@@ -132,24 +133,30 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
             await emit(run_id, {"type": "task_started", "goal": task_goal, "title": task_goal[:120]})
 
             from app.browser.session_manager import BrowserSession
+            from app.agent.secrets import SecretBroker
+
+            secret_broker = SecretBroker(
+                run_id=run_id,
+                vault_key_hex=settings.secret_encryption_key or None,
+            )
 
             async def _emit_for_browser(event: dict) -> None:
                 await emit(run_id, event)
 
             try:
                 async with BrowserSession(run_id, settings, _emit_for_browser) as browser:
-                    # Navigate to starting URL
                     await browser.navigate(start_url)
 
                     from app.agent.observer import observe
                     from app.agent.decider.llm import LLMDecider
                     from app.agent.executor import execute
+                    from app.agent.policy import PolicyContext, PolicyVerdict, evaluate as policy_eval
+                    from app.agent.secrets import SecretField, SecretRequest, is_secret_field
                     from app.browser.screencast import get_page_snapshot
 
                     decider = LLMDecider(llm)
                     step_history: list[dict] = []
                     step_index = 0
-                    final_result = None
 
                     while step_index < settings.max_steps_per_run:
                         if await _is_cancelled(run_id):
@@ -164,7 +171,6 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
                         # Observe
                         elements, page_text, page_url = await observe(browser.page)
 
-                        # Emit element table
                         await emit(run_id, {
                             "type": "element_table",
                             "step_id": f"obs-{step_index}",
@@ -182,14 +188,11 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
                             step_index=step_index,
                         ))
 
-                        logger.info(
-                            "Run %s step %d: %s (el=%s)",
-                            run_id, step_index, decision.operation, decision.element_index
-                        )
+                        logger.info("Run %s step %d: %s (el=%s)", run_id, step_index, decision.operation, decision.element_index)
 
                         step_id = f"step-{step_index}"
 
-                        # Emit action chosen
+                        # Compute bbox for cursor display
                         bbox = None
                         if decision.element_index is not None:
                             el = next((e for e in elements if e["index"] == decision.element_index), None)
@@ -201,7 +204,7 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
                             "step_id": step_id,
                             "operation": decision.operation,
                             "element_index": decision.element_index,
-                            "text": None,  # intentionally omit text (may be secret)
+                            "text": None,  # NEVER send text in events (may be a secret)
                             "bbox": bbox,
                         })
 
@@ -226,13 +229,81 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
                                 "reason": decision.reasoning,
                                 "options": ["retry", "cancel"],
                             })
-                            # Wait for user command
                             cmd = await get_command(run_id, timeout=float(settings.approval_timeout_seconds))
                             if not cmd or cmd.get("cmd") != "resume":
                                 break
                             continue
 
-                        # Execute
+                        # ── Policy gate ────────────────────────────────────────────
+                        el_label = ""
+                        if decision.element_index is not None:
+                            el_data = next((e for e in elements if e["index"] == decision.element_index), None)
+                            el_label = el_data.get("label", "") if el_data else ""
+
+                        policy_ctx = PolicyContext(
+                            url=page_url,
+                            page_text=page_text[:2000],
+                            operation=str(decision.operation),
+                            element_label=el_label,
+                            element_index=decision.element_index,
+                            run_id=run_id,
+                            step_index=step_index,
+                        )
+                        policy_result = policy_eval(policy_ctx)
+
+                        if policy_result.verdict == PolicyVerdict.BLOCK:
+                            await emit(run_id, {
+                                "type": "blocked",
+                                "reason": policy_result.reason,
+                                "options": ["cancel"],
+                            })
+                            run.status = "failed"
+                            await db.commit()
+                            break
+
+                        if policy_result.verdict == PolicyVerdict.REQUIRE_APPROVAL:
+                            screenshot = await get_page_snapshot(browser.page)
+                            await emit(run_id, {
+                                "type": "approval_required",
+                                "approval_id": policy_result.approval_id,
+                                "title": policy_result.title,
+                                "summary": policy_result.summary,
+                                "risk": policy_result.risk,
+                                "screenshot": screenshot,
+                                "timeout_seconds": settings.approval_timeout_seconds,
+                            })
+                            cmd = await get_command(run_id, timeout=float(settings.approval_timeout_seconds))
+                            if not cmd or cmd.get("cmd") != "approve":
+                                await emit(run_id, {"type": "task_failed", "message": "Approval declined or timed out."})
+                                run.status = "failed"
+                                await db.commit()
+                                break
+
+                        # ── Secret detection ──────────────────────────────────────
+                        if decision.operation == Operation.TYPE and el_label:
+                            if is_secret_field(el_label):
+                                import uuid
+                                secret_req = SecretRequest(
+                                    secret_id=str(uuid.uuid4())[:16],
+                                    title=f"Secret needed: {el_label}",
+                                    fields=[SecretField(key="value", label=el_label, kind="password")],
+                                )
+                                await emit(run_id, {
+                                    "type": "secret_required",
+                                    "secret_id": secret_req.secret_id,
+                                    "title": secret_req.title,
+                                    "fields": [{"key": f.key, "label": f.label, "kind": f.kind} for f in secret_req.fields],
+                                })
+                                try:
+                                    provided = await secret_broker.request(secret_req)
+                                    decision.text = provided.get("value", "")
+                                except asyncio.TimeoutError:
+                                    await emit(run_id, {"type": "task_failed", "message": "Secret not provided in time."})
+                                    run.status = "failed"
+                                    await db.commit()
+                                    break
+
+                        # ── Execute ──────────────────────────────────────────────
                         await emit(run_id, {"type": "step_started", "step_id": step_id, "action": decision.reasoning})
                         start_ms = asyncio.get_event_loop().time() * 1000
 
@@ -251,14 +322,16 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
 
                         step_index += 1
 
-                        # Check run time budget
+                        # Check time budget
                         async with AsyncSessionLocal() as check_db:
-                            check = await check_db.execute(select(Run).where(Run.id == run_id))
+                            from sqlalchemy import select
+                            from app.db.models import Run as RunModel
+                            check = await check_db.execute(select(RunModel).where(RunModel.id == run_id))
                             check_run = check.scalar_one_or_none()
                             if check_run:
                                 elapsed = (datetime.now(timezone.utc) - check_run.started_at).total_seconds()
                                 if elapsed > settings.max_run_seconds:
-                                    logger.warning("Run %s exceeded time budget", run_id)
+                                    logger.warning("Run %s exceeded time budget (%ds)", run_id, settings.max_run_seconds)
                                     break
 
                     # Task outcome
@@ -267,16 +340,17 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
                         run.status = "done"
                         run.result_json = str(final_result.get("result", {}))
 
-                        # Update assistant message text
                         msg_result = await db.execute(select(Message).where(Message.id == assistant_msg_id))
                         msg = msg_result.scalar_one_or_none()
                         if msg:
                             msg.text = final_result["result"].get("message", "Task complete.")
                     else:
                         await emit(run_id, {"type": "task_failed", "message": "Agent stopped without completing the task."})
-                        run.status = "failed"
+                        if run.status not in ("cancelled", "failed"):
+                            run.status = "failed"
 
                     await db.commit()
+                    secret_broker.clear()
 
             except Exception as e:
                 logger.exception("Browser session error for run %s: %s", run_id, e)
@@ -284,7 +358,7 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
                 run.status = "failed"
                 await db.commit()
 
-    # Signal WS client to close connection
+    # Signal WS to close
     q = RUN_QUEUES.get(run_id)
     if q:
         try:
@@ -294,4 +368,4 @@ async def run_agent(run_id: str, user_id: str, goal: str, assistant_msg_id: str)
 
     _seq_counters.pop(run_id, None)
     cleanup_queues(run_id)
-    logger.info("Run %s finished with status %s", run_id, "done" if final_result else "failed")  # type: ignore[possibly-undefined]
+    logger.info("Run %s complete", run_id)
