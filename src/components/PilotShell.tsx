@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import { Smartphone } from "lucide-react";
@@ -13,28 +13,19 @@ import { CommandPalette } from "./CommandPalette";
 import { SecretModal } from "./SecretModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export function PilotShell() {
+interface PilotShellProps {
+  threadId: string;
+  onProvideSecret: (id: string, values: Record<string, string>) => void;
+  onCancelSecret: () => void;
+}
+
+export function PilotShell({ threadId, onProvideSecret, onCancelSecret }: PilotShellProps) {
   const s = usePilotStore();
   const isMobile = useIsMobile();
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
-
-  /* ── Hydrate & boot ── */
-  useEffect(() => {
-    s.hydrate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (!s.hydrated) return;
-    if (!s.activeThreadId || s.threads.length === 0) {
-      const newId = s.createThread();
-      s.setActiveThread(newId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [s.hydrated]);
 
   /* ── Theme applied to <html> ── */
   useEffect(() => {
@@ -76,17 +67,6 @@ export function PilotShell() {
     s.setPanelSizes([a, b]);
   };
 
-  if (!s.hydrated || !s.activeThreadId) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="size-4 animate-spin rounded-full border-2 border-border border-t-agent" />
-          Loading…
-        </div>
-      </div>
-    );
-  }
-
   const chatFocused = s.panelFocus === "chat";
   const browserFocused = s.panelFocus === "browser";
 
@@ -100,7 +80,7 @@ export function PilotShell() {
       {/* ── Main content area ── */}
       <main className="relative min-h-0 flex-1 overflow-hidden">
         {isMobile ? (
-          <MobileLayout />
+          <MobileLayout threadId={threadId} />
         ) : s.layoutMode === "chat" ? (
           <motion.div
             key="chat-only"
@@ -108,7 +88,7 @@ export function PilotShell() {
             animate={{ opacity: 1 }}
             className="mx-auto flex h-full max-w-2xl flex-col"
           >
-            <ChatPanel />
+            <ChatPanel threadId={threadId} />
           </motion.div>
         ) : (
           <AnimatePresence mode="wait">
@@ -118,11 +98,7 @@ export function PilotShell() {
               animate={{ opacity: 1 }}
               className="h-full"
             >
-              <Group
-                orientation="horizontal"
-                onLayoutChanged={onPanelResize}
-                className="h-full"
-              >
+              <Group orientation="horizontal" onLayoutChanged={onPanelResize} className="h-full">
                 {/* Chat pane */}
                 <Panel
                   id="chat-pane"
@@ -131,7 +107,7 @@ export function PilotShell() {
                   maxSize={chatFocused ? "90%" : browserFocused ? "5%" : "72%"}
                   className="flex flex-col"
                 >
-                  <ChatPanel />
+                  <ChatPanel threadId={threadId} />
                 </Panel>
 
                 {/* Resize handle */}
@@ -167,13 +143,13 @@ export function PilotShell() {
         onClose={() => setPaletteOpen(false)}
         onSettingsOpen={() => setSettingsOpen(true)}
       />
-      <SecretModal />
+      <SecretModal onProvide={onProvideSecret} onCancel={onCancelSecret} />
     </div>
   );
 }
 
 /* ── Mobile layout ── */
-function MobileLayout() {
+function MobileLayout({ threadId }: { threadId: string }) {
   const s = usePilotStore();
   const hasTask = Boolean(s.currentTask);
 
@@ -205,11 +181,10 @@ function MobileLayout() {
             <BrowserPanel />
           </div>
         ) : (
-          <ChatPanel />
+          <ChatPanel threadId={threadId} />
         )}
       </div>
 
-      {/* Floating action preview on chat tab */}
       {hasTask && s.mobileView === "chat" && s.layoutMode === "split" && (
         <motion.button
           initial={{ y: 20, opacity: 0 }}

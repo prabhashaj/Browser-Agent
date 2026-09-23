@@ -1,42 +1,41 @@
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { usePilotStore } from "@/store/pilotStore";
-import type { ChatThread } from "@/types/pilot";
+import { Input } from "@/components/ui/input";
+import { api } from "@/lib/api";
+import type { ThreadOut } from "@/lib/api";
 
 interface HistorySidebarProps {
   open: boolean;
   onClose: () => void;
+  onSelectThread?: (id: string) => void;
 }
 
 function ThreadItem({
   thread,
-  isActive,
   onSelect,
-  onClear,
+  onDelete,
 }: {
-  thread: ChatThread;
-  isActive: boolean;
+  thread: ThreadOut;
   onSelect: () => void;
-  onClear: () => void;
+  onDelete: () => void;
 }) {
-  const date = new Date(thread.updatedAt);
+  const date = new Date(thread.updated_at);
   const timeStr = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   return (
     <button
-      className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors ${
-        isActive ? "bg-agent-soft text-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"
-      }`}
+      className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors text-muted-foreground hover:bg-accent hover:text-foreground"
       onClick={onSelect}
     >
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium leading-5">{thread.title}</p>
-        <p className="text-xs opacity-60">{thread.messages.length} messages · {timeStr}</p>
+        <p className="truncate font-medium leading-5 text-foreground">{thread.title}</p>
+        <p className="text-xs opacity-60">{thread.message_count} messages · {timeStr}</p>
       </div>
       <button
         className="invisible size-6 flex-shrink-0 rounded-lg hover:bg-destructive/15 hover:text-destructive group-hover:visible"
-        onClick={(e) => { e.stopPropagation(); onClear(); }}
-        aria-label={`Clear thread "${thread.title}"`}
+        onClick={(e) => { e.stopPropagation(); onDelete(); }}
+        aria-label={`Delete thread "${thread.title}"`}
         tabIndex={-1}
       >
         <Trash2 className="m-auto size-3.5" />
@@ -45,14 +44,34 @@ function ThreadItem({
   );
 }
 
-export function HistorySidebar({ open, onClose }: HistorySidebarProps) {
-  const s = usePilotStore();
+export function HistorySidebar({ open, onClose, onSelectThread }: HistorySidebarProps) {
+  const [threads, setThreads] = useState<ThreadOut[]>([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const newThread = () => {
-    const id = s.createThread();
-    s.setActiveThread(id);
+  useEffect(() => {
+    if (!open) return;
+    setLoading(true);
+    api.threads.list()
+      .then(setThreads)
+      .catch(() => setThreads([]))
+      .finally(() => setLoading(false));
+  }, [open]);
+
+  const newThread = async () => {
+    const t = await api.threads.create();
+    onSelectThread?.(t.id);
     onClose();
   };
+
+  const deleteThread = async (id: string) => {
+    await api.threads.delete(id);
+    setThreads((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const filtered = search
+    ? threads.filter((t) => t.title.toLowerCase().includes(search.toLowerCase()))
+    : threads;
 
   return (
     <>
@@ -91,17 +110,32 @@ export function HistorySidebar({ open, onClose }: HistorySidebarProps) {
               </Button>
             </div>
 
+            <div className="px-3 py-2 border-b border-border">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search conversations…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-8 h-8 text-sm"
+                />
+              </div>
+            </div>
+
             <div className="flex-1 overflow-y-auto p-2">
-              {s.threads.length === 0 ? (
-                <p className="px-3 py-8 text-center text-xs text-muted-foreground">No conversations yet.</p>
+              {loading ? (
+                <p className="px-3 py-8 text-center text-xs text-muted-foreground">Loading…</p>
+              ) : filtered.length === 0 ? (
+                <p className="px-3 py-8 text-center text-xs text-muted-foreground">
+                  {search ? "No results found." : "No conversations yet."}
+                </p>
               ) : (
-                s.threads.map((t) => (
+                filtered.map((t) => (
                   <ThreadItem
                     key={t.id}
                     thread={t}
-                    isActive={t.id === s.activeThreadId}
-                    onSelect={() => { s.setActiveThread(t.id); onClose(); }}
-                    onClear={() => s.clearThread(t.id)}
+                    onSelect={() => { onSelectThread?.(t.id); onClose(); }}
+                    onDelete={() => deleteThread(t.id)}
                   />
                 ))
               )}

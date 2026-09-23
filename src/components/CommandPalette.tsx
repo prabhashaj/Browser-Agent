@@ -83,19 +83,19 @@ export function CommandPalette({ open, onClose, onSettingsOpen }: CommandPalette
                     id="cmd-new"
                     icon={<MessageSquarePlus className="size-4" />}
                     label="New conversation"
-                    onSelect={() => run(() => { const id = s.createThread(); s.setActiveThread(id); })}
+                    onSelect={() => run(() => { document.dispatchEvent(new CustomEvent("pilot:new-thread")); })}
                   />
                   <CmdItem
                     id="cmd-history"
                     icon={<Clock className="size-4" />}
                     label="Open history"
-                    onSelect={() => run(() => { /* signal via callback is handled in PilotShell */ document.dispatchEvent(new Event("pilot:open-history")); })}
+                    onSelect={() => run(() => { document.dispatchEvent(new Event("pilot:open-history")); })}
                   />
                   <CmdItem
                     id="cmd-clear"
                     icon={<Trash2 className="size-4" />}
                     label="Clear current conversation"
-                    onSelect={() => run(() => { if (s.activeThreadId) s.clearThread(s.activeThreadId); })}
+                    onSelect={() => run(() => { document.dispatchEvent(new Event("pilot:clear-thread")); })}
                   />
                 </Command.Group>
 

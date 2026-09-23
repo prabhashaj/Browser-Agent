@@ -1,7 +1,6 @@
-import { Moon, Sun, Clock, Settings, Mic } from "lucide-react";
+import { Moon, Sun, Clock, Settings, Mic, Wifi, WifiOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePilotStore } from "@/store/pilotStore";
-import { agentService } from "@/services/mockAgent";
 
 interface TopBarProps {
   onHistoryOpen: () => void;
@@ -13,13 +12,18 @@ export function TopBar({ onHistoryOpen, onSettingsOpen }: TopBarProps) {
   const setTheme = usePilotStore((s) => s.setTheme);
   const voiceState = usePilotStore((s) => s.voiceState);
   const setVoiceState = usePilotStore((s) => s.setVoiceState);
+  const reconnecting = usePilotStore((s) => s.reconnecting);
+  const agentStatus = usePilotStore((s) => s.agentStatus);
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   const startVoice = () => {
-    agentService.startVoice();
-    setVoiceState("listening");
+    setVoiceState(voiceState === "idle" ? "listening" : "idle");
   };
+
+  // Connection status indicator
+  const isConnected = agentStatus !== "idle" && !reconnecting;
+  const isOffline = reconnecting;
 
   return (
     <header
@@ -41,9 +45,19 @@ export function TopBar({ onHistoryOpen, onSettingsOpen }: TopBarProps) {
           </svg>
         </div>
         <span className="text-sm font-semibold tracking-tight">Pilot</span>
-        <span className="rounded-full bg-agent-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-agent">
-          Demo
-        </span>
+
+        {/* Connection status */}
+        {isOffline ? (
+          <span className="flex items-center gap-1 rounded-full bg-warning-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-warning">
+            <Loader2 className="size-2.5 animate-spin" />
+            Reconnecting
+          </span>
+        ) : isConnected ? (
+          <span className="flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-success">
+            <span className="live-dot" />
+            Live
+          </span>
+        ) : null}
       </div>
 
       {/* Actions */}

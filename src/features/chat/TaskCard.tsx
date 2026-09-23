@@ -1,25 +1,11 @@
 import { motion } from "framer-motion";
-import { Plane, Pizza, Laptop, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { usePilotStore } from "@/store/pilotStore";
-import type { ResultKind } from "@/types/pilot";
-
-const icons: Record<ResultKind, typeof Plane> = {
-  flight: Plane,
-  food: Pizza,
-  products: Laptop,
-};
-
-const scenarioLabel: Record<ResultKind, string> = {
-  flight: "Flight",
-  food: "Food delivery",
-  products: "Research",
-};
 
 export function TaskCard() {
   const task = usePilotStore((s) => s.currentTask);
   if (!task) return null;
 
-  const Icon = icons[task.scenario];
   const isDone = task.status === "done";
   const isFailed = task.status === "failed";
 
@@ -33,15 +19,18 @@ export function TaskCard() {
     >
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="grid size-8 flex-shrink-0 place-items-center rounded-xl bg-agent-soft text-agent">
-          <Icon className="size-4" />
+          {isDone ? (
+            <CheckCircle2 className="size-4 text-success" />
+          ) : isFailed ? (
+            <AlertCircle className="size-4 text-destructive" />
+          ) : (
+            <Loader2 className="size-4 animate-spin" />
+          )}
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{task.title}</p>
           <p className="truncate text-xs text-muted-foreground">{task.currentAction}</p>
         </div>
-        <span className="flex-shrink-0 rounded-full bg-agent-soft px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-agent">
-          {scenarioLabel[task.scenario]}
-        </span>
       </div>
       {/* Progress bar */}
       <div className="h-1 w-full bg-border">
@@ -52,7 +41,6 @@ export function TaskCard() {
           transition={{ duration: 0.4, ease: "easeOut" }}
         />
       </div>
-      {/* Status row */}
       {(isDone || isFailed) && (
         <div className={`flex items-center gap-2 px-4 py-2 text-xs font-medium ${isDone ? "text-success" : "text-destructive"}`}>
           {isDone ? <CheckCircle2 className="size-3.5" /> : <AlertCircle className="size-3.5" />}

@@ -1,0 +1,72 @@
+services:
+  # ── PostgreSQL ──────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: pilot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pilot
+      POSTGRES_PASSWORD: pilot
+      POSTGRES_DB: pilot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Backend API (FastAPI + Playwright) ─────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pilot-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://pilot:pilot@postgres:5432/pilot
+      PORT: 8000
+      CORS_ORIGINS: http://localhost:3000
+      # Copy remaining vars from .env file
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - browser_profiles:/tmp/pilot-profiles
+      - artifacts:/app/artifacts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Frontend (Bun dev server) ───────────────────────────────────────
+  web:
+    image: oven/bun:latest
+    container_name: pilot-web
+    working_dir: /app
+    command: bun run dev --host 0.0.0.0
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      VITE_API_BASE: http://localhost:8000
+      VITE_WS_BASE: ws://localhost:8000
+      VITE_DEMO_MODE: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  browser_profiles:
+  artifacts:

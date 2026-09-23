@@ -1,86 +1,76 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronUp, CheckCircle2, Circle, Loader2, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, Circle, Loader2, AlertCircle } from "lucide-react";
 import { usePilotStore } from "@/store/pilotStore";
 import type { AgentStep } from "@/types/pilot";
 
-const StatusIcon = ({ status }: { status: AgentStep["status"] }) => {
-  if (status === "done") return <CheckCircle2 className="size-3.5 text-success flex-shrink-0" />;
-  if (status === "running") return <Loader2 className="size-3.5 text-agent animate-spin flex-shrink-0" />;
-  if (status === "blocked") return <AlertCircle className="size-3.5 text-destructive flex-shrink-0" />;
-  return <Circle className="size-3.5 text-muted-foreground/40 flex-shrink-0" />;
-};
+const STATUS_ICON = {
+  pending: <Circle className="size-3 text-muted-foreground/40" />,
+  running: <Loader2 className="size-3 animate-spin text-agent" />,
+  done: <CheckCircle2 className="size-3 text-success" />,
+  blocked: <AlertCircle className="size-3 text-destructive" />,
+} satisfies Record<AgentStep["status"], React.ReactNode>;
+
+function StepRow({ step }: { step: AgentStep }) {
+  return (
+    <motion.div
+      layout
+      initial={{ x: -6, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className={`flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-xs ${
+        step.status === "running" ? "bg-agent-soft" : ""
+      }`}
+    >
+      {STATUS_ICON[step.status]}
+      <span
+        className={`truncate ${
+          step.status === "done"
+            ? "text-muted-foreground line-through"
+            : step.status === "running"
+            ? "font-medium text-foreground"
+            : step.status === "blocked"
+            ? "text-destructive"
+            : "text-muted-foreground"
+        }`}
+      >
+        {step.target}
+      </span>
+      {step.status === "running" && (
+        <span className="ml-auto shrink-0 text-[10px] font-medium text-agent">Running</span>
+      )}
+    </motion.div>
+  );
+}
 
 export function ActivityTimeline() {
   const steps = usePilotStore((s) => s.steps);
-  const [open, setOpen] = useState(true);
+  const agentStatus = usePilotStore((s) => s.agentStatus);
 
-  if (steps.length === 0) return null;
-
-  const doneCount = steps.filter((s) => s.status === "done").length;
+  const isActive = agentStatus === "running" || agentStatus === "thinking" || agentStatus === "waiting";
+  if (!isActive && steps.length === 0) return null;
 
   return (
-    <div className="mx-4 mb-3 rounded-2xl border border-border bg-card overflow-hidden">
-      <button
-        className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium hover:bg-accent transition-colors"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-controls="activity-timeline"
-        id="timeline-toggle"
+    <AnimatePresence>
+      <motion.div
+        initial={{ height: 0, opacity: 0 }}
+        animate={{ height: "auto", opacity: 1 }}
+        exit={{ height: 0, opacity: 0 }}
+        className="mx-4 mb-2 overflow-hidden rounded-2xl border border-border bg-card"
       >
-        <span className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground font-mono">
-            {doneCount}/{steps.length}
-          </span>
-          Activity
-        </span>
-        <Button variant="ghost" size="icon-sm" asChild tabIndex={-1} aria-hidden="true">
-          <span>{open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}</span>
-        </Button>
-      </button>
-
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            id="activity-timeline"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="overflow-hidden"
-          >
-            <div className="space-y-0.5 border-t border-border px-3 py-2">
-              {steps.map((step, i) => (
-                <motion.div
-                  key={step.id}
-                  initial={{ x: -4, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: i * 0.04 }}
-                  className={`flex items-center gap-3 rounded-xl px-2 py-2 text-xs transition-colors ${
-                    step.status === "running"
-                      ? "bg-agent-soft"
-                      : step.status === "done"
-                      ? "text-muted-foreground"
-                      : ""
-                  }`}
-                >
-                  <StatusIcon status={step.status} />
-                  <span className="font-mono text-[10px] text-muted-foreground w-4 flex-shrink-0">
-                    {step.index}
-                  </span>
-                  <span className={`flex-1 truncate ${step.status === "running" ? "font-medium text-foreground" : ""}`}>
-                    {step.target}
-                  </span>
-                  <span className="flex-shrink-0 rounded-md bg-muted px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground">
-                    {step.operation}
-                  </span>
-                </motion.div>
-              ))}
+        <div className="px-1 py-1">
+          <AnimatePresence initial={false}>
+            {steps.map((step) => (
+              <StepRow key={step.id} step={step} />
+            ))}
+          </AnimatePresence>
+          {steps.length === 0 && agentStatus === "thinking" && (
+            <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
+              <Loader2 className="size-3 animate-spin text-agent" />
+              Thinking…
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+          )}
+        </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

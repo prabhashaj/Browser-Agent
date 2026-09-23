@@ -1,4 +1,4 @@
-import { Moon, Sun, Info } from "lucide-react";
+import { Moon, Sun, Info, Keyboard } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription id="settings-desc">
-            Preferences for this browser session.
+            Preferences for your Pilot session.
           </DialogDescription>
         </DialogHeader>
 
@@ -66,21 +66,25 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             <div className="flex items-start gap-3">
               <Info className="mt-0.5 size-4 flex-shrink-0 text-muted-foreground" />
               <div className="space-y-1 text-xs text-muted-foreground">
-                <p><span className="font-semibold text-foreground">USE_MOCK = true</span></p>
-                <p>All agent activity is simulated locally. No network calls, no real bookings, no credentials stored.</p>
-                <p>To connect a real backend, implement the <code className="font-mono bg-border px-1 rounded">AgentService</code> interface in <code className="font-mono bg-border px-1 rounded">src/services/</code>.</p>
+                <p className="font-semibold text-foreground">Pilot AI Browser Agent</p>
+                <p>Chat with an AI that can browse the real web on your behalf. Every action requiring real-world consequences needs your explicit approval.</p>
+                <p>Set <code className="font-mono bg-border px-1 rounded">GEMINI_API_KEY</code> or <code className="font-mono bg-border px-1 rounded">ANTHROPIC_API_KEY</code> in <code className="font-mono bg-border px-1 rounded">.env</code> to connect a real agent.</p>
               </div>
             </div>
           </div>
 
           {/* Keyboard shortcuts */}
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Keyboard shortcuts</p>
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <Keyboard className="size-3" />
+              Shortcuts
+            </p>
             <div className="space-y-1.5 text-xs">
               {[
                 ["Open command palette", "⌘ K"],
-                ["Close / Stop", "Esc"],
                 ["Settings", "⌘ ,"],
+                ["Close / Stop voice", "Esc"],
+                ["Toggle browser panel", "⌘ \\"],
               ].map(([action, key]) => (
                 <div key={action} className="flex items-center justify-between">
                   <span className="text-muted-foreground">{action}</span>

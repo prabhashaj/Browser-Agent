@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { usePilotStore } from "@/store/pilotStore";
+import type { ServerMessage } from "@/store/pilotStore";
+import type { RunResult } from "@/types/pilot";
 import { ResultCard } from "./ResultCards";
-import type { ChatMessage } from "@/types/pilot";
 
-function UserBubble({ message }: { message: ChatMessage }) {
+function UserBubble({ message }: { message: ServerMessage }) {
   return (
     <div className="flex justify-end">
       <div
@@ -20,11 +20,15 @@ function UserBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-function AssistantBubble({ message }: { message: ChatMessage }) {
-  const isStreaming = message.text === "" ;
+function AssistantBubble({ message }: { message: ServerMessage }) {
+  const isStreaming = message.text === "";
+  let result: RunResult | null = null;
+  if (message.resultJson) {
+    try { result = JSON.parse(message.resultJson) as RunResult; } catch { /* ignore */ }
+  }
+
   return (
     <div className="flex flex-col gap-3">
-      {/* Unboxed assistant text */}
       {isStreaming ? (
         <div className="flex items-center gap-2 py-1">
           <div className="flex gap-1" aria-label="Pilot is thinking">
@@ -41,24 +45,24 @@ function AssistantBubble({ message }: { message: ChatMessage }) {
       ) : (
         <p className="text-sm leading-7 text-foreground whitespace-pre-wrap">{message.text}</p>
       )}
-      {/* Inline result card */}
-      {message.result && (
+      {result && (
         <motion.div
           initial={{ y: 8, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ type: "spring", stiffness: 140, damping: 20 }}
         >
-          <ResultCard kind={message.result} />
+          <ResultCard result={result} />
         </motion.div>
       )}
     </div>
   );
 }
 
-export function Transcript({ threadId }: { threadId: string }) {
-  const threads = usePilotStore((s) => s.threads);
-  const thread = threads.find((t) => t.id === threadId);
-  const messages = thread?.messages ?? [];
+interface TranscriptProps {
+  messages: ServerMessage[];
+}
+
+export function Transcript({ messages }: TranscriptProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,7 +70,12 @@ export function Transcript({ threadId }: { threadId: string }) {
   }, [messages.length, messages.at(-1)?.text]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-2 pt-4" role="log" aria-live="polite" aria-label="Conversation">
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-2 pt-4"
+      role="log"
+      aria-live="polite"
+      aria-label="Conversation"
+    >
       <AnimatePresence initial={false}>
         {messages.map((msg) => (
           <motion.div
