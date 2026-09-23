@@ -6,14 +6,16 @@ import { TaskCard } from "./TaskCard";
 import { ActivityTimeline } from "./ActivityTimeline";
 import { ApprovalSheet } from "@/components/ApprovalSheet";
 import { EmptyGreeting } from "./EmptyGreeting";
-import { useRunSession } from "@/hooks/useRunSession";
+import type { RunSessionHandle } from "@/hooks/useRunSession";
 
 interface ChatPanelProps {
   threadId: string;
+  /** Session created by PilotShell — prevents duplicate WebSocket connections */
+  session: RunSessionHandle;
+  onVoiceOpen?: () => void;
 }
 
-export function ChatPanel({ threadId }: ChatPanelProps) {
-  const session = useRunSession(threadId);
+export function ChatPanel({ threadId, session, onVoiceOpen }: ChatPanelProps) {
   const serverMessages = usePilotStore((s) => s.serverMessages);
   const currentTask = usePilotStore((s) => s.currentTask);
   const agentStatus = usePilotStore((s) => s.agentStatus);
@@ -52,7 +54,7 @@ export function ChatPanel({ threadId }: ChatPanelProps) {
       )}
 
       {/* Composer */}
-      <Composer session={session} />
+      <Composer session={session} onVoiceOpen={onVoiceOpen} />
     </div>
   );
 }

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pilot Demo — Tech Shop</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #0f172a; color: #f1f5f9; min-height: 100vh; }
+  header { background: #1e293b; border-bottom: 1px solid #334155; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 18px; font-weight: 700; color: #f1f5f9; }
+  .search-bar { display: flex; gap: 8px; align-items: center; }
+  .search-bar input { padding: 8px 14px; border: 1.5px solid #334155; border-radius: 8px; background: #1e293b; color: #f1f5f9; font-size: 14px; outline: none; width: 280px; }
+  .search-bar input:focus { border-color: #6366f1; }
+  .search-bar button { padding: 8px 18px; background: #6366f1; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+  .filters { display: flex; gap: 8px; padding: 16px 24px; border-bottom: 1px solid #1e293b; }
+  .filter-btn { padding: 6px 14px; border: 1.5px solid #334155; border-radius: 20px; background: transparent; color: #94a3b8; font-size: 13px; cursor: pointer; transition: all .15s; }
+  .filter-btn.active, .filter-btn:hover { border-color: #6366f1; color: #6366f1; background: #6366f1/10; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; padding: 24px; max-width: 1100px; margin: 0 auto; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; overflow: hidden; transition: transform .15s, box-shadow .15s; }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px #0006; }
+  .card-img { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: #0f172a; }
+  .card-body { padding: 16px; }
+  .card-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .card-meta { color: #64748b; font-size: 12px; margin-bottom: 12px; }
+  .card-footer { display: flex; align-items: center; justify-content: space-between; }
+  .price { font-size: 20px; font-weight: 800; color: #818cf8; }
+  .add-btn { padding: 7px 16px; background: #6366f1; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .add-btn:hover { background: #4f46e5; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; margin-bottom: 8px; }
+  .badge-best { background: #fbbf24; color: #0f172a; }
+  .badge-sale { background: #ef4444; color: white; }
+  #cart-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #6366f1; color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; z-index: 100; }
+  #cart-bar.visible { display: flex; }
+  .checkout-btn { padding: 10px 28px; background: white; color: #6366f1; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+  #checkout-modal { display: none; position: fixed; inset: 0; background: #0009; z-index: 200; align-items: center; justify-content: center; }
+  #checkout-modal.open { display: flex; }
+  .modal-box { background: #1e293b; border-radius: 16px; padding: 32px; max-width: 420px; width: 90%; border: 1px solid #334155; }
+  .modal-box h2 { font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+  .modal-box input { width: 100%; padding: 10px 14px; margin-bottom: 12px; border: 1.5px solid #334155; border-radius: 8px; background: #0f172a; color: #f1f5f9; font-size: 14px; outline: none; }
+  .modal-box input:focus { border-color: #6366f1; }
+  .place-btn { width: 100%; padding: 14px; background: #16a34a; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+  #confirm-screen { display: none; text-align: center; padding: 40px 24px; }
+  #confirm-screen h2 { font-size: 24px; font-weight: 800; color: #4ade80; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛍️ TechShop</h1>
+  <div class="search-bar">
+    <input id="search" type="text" placeholder="Search products…" oninput="filterProducts()">
+    <button>Search</button>
+  </div>
+</header>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+  <button class="filter-btn" onclick="setFilter('laptop', this)">Laptops</button>
+  <button class="filter-btn" onclick="setFilter('phone', this)">Phones</button>
+  <button class="filter-btn" onclick="setFilter('tablet', this)">Tablets</button>
+  <button class="filter-btn" onclick="setFilter('audio', this)">Audio</button>
+</div>
+
+<div class="grid" id="product-grid"></div>
+
+<div id="cart-bar">
+  <span id="cart-label">0 items · $0.00</span>
+  <button class="checkout-btn" onclick="openCheckout()">Checkout →</button>
+</div>
+
+<div id="checkout-modal">
+  <div class="modal-box" id="checkout-form-box">
+    <h2>Checkout</h2>
+    <div id="order-summary" style="margin-bottom:16px;font-size:13px;color:#94a3b8;"></div>
+    <input id="cc-name" type="text" placeholder="Full name">
+    <input id="cc-email" type="email" placeholder="Email address">
+    <input id="cc-card" type="text" placeholder="Card number (demo)">
+    <input id="cc-expiry" type="text" placeholder="MM/YY">
+    <button class="place-btn" id="place-order-btn" onclick="placeOrder()">Place Order</button>
+    <button style="width:100%;margin-top:8px;background:transparent;border:none;color:#64748b;cursor:pointer;" onclick="closeCheckout()">Cancel</button>
+  </div>
+  <div id="confirm-screen">
+    <div style="font-size:64px;margin-bottom:16px;">✅</div>
+    <h2>Order Confirmed!</h2>
+    <p id="order-details" style="color:#94a3b8;font-size:15px;"></p>
+    <p style="color:#64748b;font-size:13px;margin-top:8px;">You'll receive a confirmation email shortly.</p>
+  </div>
+</div>
+
+<script>
+const PRODUCTS = [
+  { id: 1, name: 'MacBook Pro 14"', cat: 'laptop', emoji: '💻', price: 999, badge: 'best', desc: 'M3 chip · 16GB RAM · 512GB SSD' },
+  { id: 2, name: 'Dell XPS 15', cat: 'laptop', emoji: '💻', price: 879, badge: null, desc: 'Intel i7 · 16GB · 512GB · OLED' },
+  { id: 3, name: 'ThinkPad X1 Carbon', cat: 'laptop', emoji: '💻', price: 749, badge: 'sale', desc: 'i5 · 16GB · 256GB · Lightweight' },
+  { id: 4, name: 'iPhone 15 Pro', cat: 'phone', emoji: '📱', price: 999, badge: 'best', desc: 'A17 Pro · 256GB · Titanium' },
+  { id: 5, name: 'Pixel 8 Pro', cat: 'phone', emoji: '📱', price: 799, badge: null, desc: 'Tensor G3 · 128GB · Android 14' },
+  { id: 6, name: 'Samsung Galaxy S24', cat: 'phone', emoji: '📱', price: 699, badge: 'sale', desc: 'Snapdragon 8 · 256GB · 6.7"' },
+  { id: 7, name: 'iPad Pro 11"', cat: 'tablet', emoji: '📟', price: 799, badge: null, desc: 'M4 chip · 256GB · Wi-Fi + Cellular' },
+  { id: 8, name: 'Surface Pro 9', cat: 'tablet', emoji: '📟', price: 699, badge: null, desc: 'i7 · 16GB · 512GB · Detachable kbd' },
+  { id: 9, name: 'Sony WH-1000XM5', cat: 'audio', emoji: '🎧', price: 279, badge: 'best', desc: 'ANC · 30hr battery · Hi-Res Audio' },
+  { id: 10, name: 'AirPods Pro 2', cat: 'audio', emoji: '🎧', price: 199, badge: null, desc: 'H2 chip · ANC · MagSafe · USB-C' },
+  { id: 11, name: 'Bose QC45', cat: 'audio', emoji: '🎧', price: 179, badge: 'sale', desc: 'Quiet Comfort · 24hr · Foldable' },
+  { id: 12, name: 'Lenovo IdeaPad 5', cat: 'laptop', emoji: '💻', price: 599, badge: null, desc: 'Ryzen 5 · 8GB · 512GB · 15.6"' },
+];
+
+let cart = {};
+let activeFilter = 'all';
+
+function renderProducts() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const grid = document.getElementById('product-grid');
+  const filtered = PRODUCTS.filter(p =>
+    (activeFilter === 'all' || p.cat === activeFilter) &&
+    (p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q))
+  );
+  grid.innerHTML = filtered.map(p => `
+    <div class="card" data-cat="${p.cat}">
+      <div class="card-img">${p.emoji}</div>
+      <div class="card-body">
+        ${p.badge ? `<span class="badge badge-${p.badge}">${p.badge === 'best' ? '⭐ Best Seller' : '🔥 On Sale'}</span>` : ''}
+        <div class="card-name">${p.name}</div>
+        <div class="card-meta">${p.desc}</div>
+        <div class="card-footer">
+          <div class="price">$${p.price}</div>
+          <button class="add-btn" id="add-${p.id}" onclick="addToCart(${p.id})">
+            ${cart[p.id] ? `In cart (${cart[p.id]})` : 'Add to cart'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addToCart(id) {
+  cart[id] = (cart[id] || 0) + 1;
+  updateCartBar();
+  renderProducts();
+}
+
+function updateCartBar() {
+  const items = Object.entries(cart);
+  const total = items.reduce((s, [id, qty]) => s + (PRODUCTS.find(p => p.id === +id)?.price ?? 0) * qty, 0);
+  const count = items.reduce((s, [, qty]) => s + qty, 0);
+  document.getElementById('cart-label').textContent = `${count} item${count !== 1 ? 's' : ''} · $${total.toFixed(2)}`;
+  document.getElementById('cart-bar').classList.toggle('visible', count > 0);
+}
+
+function filterProducts() { renderProducts(); }
+function setFilter(cat, btn) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
+}
+
+function openCheckout() {
+  const items = Object.entries(cart).map(([id, qty]) => {
+    const p = PRODUCTS.find(p => p.id === +id);
+    return p ? `${p.name} ×${qty} ($${(p.price * qty)})` : '';
+  }).join(', ');
+  document.getElementById('order-summary').textContent = 'Order: ' + items;
+  document.getElementById('checkout-form-box').style.display = 'block';
+  document.getElementById('confirm-screen').style.display = 'none';
+  document.getElementById('checkout-modal').classList.add('open');
+}
+
+function closeCheckout() {
+  document.getElementById('checkout-modal').classList.remove('open');
+}
+
+function placeOrder() {
+  const name = document.getElementById('cc-name').value || 'Customer';
+  const total = Object.entries(cart).reduce((s, [id, qty]) =>
+    s + (PRODUCTS.find(p => p.id === +id)?.price ?? 0) * qty, 0);
+  document.getElementById('checkout-form-box').style.display = 'none';
+  document.getElementById('confirm-screen').style.display = 'block';
+  document.getElementById('order-details').textContent =
+    `Thank you, ${name}! Your order for $${total.toFixed(2)} is confirmed.`;
+  cart = {};
+  updateCartBar();
+}
+
+renderProducts();
+</script>
+</body>
+</html>

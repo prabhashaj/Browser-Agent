@@ -3,16 +3,16 @@ import { ArrowUp, Mic, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePilotStore } from "@/store/pilotStore";
 import type { RunSessionHandle } from "@/hooks/useRunSession";
-import { VoiceMode } from "@/features/voice/VoiceMode";
 
 interface ComposerProps {
   session: RunSessionHandle;
+  /** Opens the full VoiceMode overlay (managed by PilotShell) */
+  onVoiceOpen?: (() => void) | undefined;
 }
 
-export function Composer({ session }: ComposerProps) {
+export function Composer({ session, onVoiceOpen }: ComposerProps) {
   const agentStatus = usePilotStore((s) => s.agentStatus);
   const voiceState = usePilotStore((s) => s.voiceState);
-  const setVoiceState = usePilotStore((s) => s.setVoiceState);
 
   const [draft, setDraft] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -37,7 +37,6 @@ export function Composer({ session }: ComposerProps) {
 
   const onInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setDraft(e.target.value);
-    // Auto-grow
     const el = e.target;
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
@@ -45,9 +44,6 @@ export function Composer({ session }: ComposerProps) {
 
   return (
     <div className="flex flex-col gap-0">
-      {/* Voice mode overlay (compact in split mode) */}
-      <VoiceMode compact />
-
       <div className="mx-4 mb-4 overflow-hidden rounded-2xl border border-border bg-card shadow-sm focus-within:border-agent/50 focus-within:shadow-md transition-all">
         <textarea
           ref={textareaRef}
@@ -64,10 +60,11 @@ export function Composer({ session }: ComposerProps) {
         />
         <div className="flex items-center justify-between px-3 pb-3">
           <Button
+            id="voice-mode-btn"
             variant="ghost"
             size="icon"
             className={`size-8 transition-colors ${voiceState !== "idle" ? "text-agent" : "text-muted-foreground"}`}
-            onClick={() => setVoiceState(voiceState === "idle" ? "listening" : "idle")}
+            onClick={() => onVoiceOpen?.()}
             aria-label="Start voice conversation"
           >
             <Mic className="size-4" />
